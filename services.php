@@ -6,7 +6,7 @@ $page_title = 'Our Services | ' . SITE_NAME;
 $page_description = 'PLC automation, control panels, custom electronics, and IoT solutions for industrial manufacturing.';
 
 include 'includes/header.php'; 
-include 'includes/navbar.php'; 
+
 ?>
 
 <!-- PAGE HEADER -->

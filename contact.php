@@ -10,7 +10,7 @@ $success_message = isset($_GET['success']) ? true : false;
 $error_message = isset($_GET['error']) ? true : false;
 
 include 'includes/header.php'; 
-include 'includes/navbar.php'; 
+
 ?>
 
 <!-- PAGE HEADER -->

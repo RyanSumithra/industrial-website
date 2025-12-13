@@ -6,7 +6,7 @@ $page_title = SITE_TAGLINE . ' | ' . SITE_NAME;
 $page_description = 'Delivering cutting-edge PLC automation, control systems, and custom electronics for modern manufacturing.';
 
 include 'includes/header.php'; 
-include 'includes/navbar.php'; 
+
 ?>
 
 <!-- HERO SECTION -->

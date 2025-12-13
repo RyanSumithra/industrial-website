@@ -6,7 +6,7 @@ $page_title = 'About Us | ' . SITE_NAME;
 $page_description = 'Learn about our 15+ years of experience in industrial automation and mechatronics engineering.';
 
 include 'includes/header.php'; 
-include 'includes/navbar.php'; 
+
 ?>
 
 <!-- ABOUT INTRO -->

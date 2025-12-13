@@ -6,7 +6,7 @@ $page_title = 'Projects & Case Studies | ' . SITE_NAME;
 $page_description = 'Explore our portfolio of successful industrial automation projects across various industries.';
 
 include 'includes/header.php'; 
-include 'includes/navbar.php'; 
+
 ?>
 
 <!-- PAGE HEADER -->
