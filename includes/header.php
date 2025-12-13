@@ -34,6 +34,8 @@
             background-color: var(--bg-black) !important;
             color: var(--text-white) !important;
             font-family: 'Inter', sans-serif !important;
+            margin: 0;
+            padding-top: 90px; /* Increased to prevent hiding behind larger header */
         }
 
         /* 2. Global Navbar Styling */
@@ -41,11 +43,78 @@
             background: rgba(10, 10, 10, 0.95) !important;
             border-bottom: 1px solid rgba(255, 51, 51, 0.1) !important;
             backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            height: 90px; /* Increased height for bigger logo */
+            display: flex;
+            align-items: center;
         }
-        .nav-logo span { color: var(--primary-red) !important; }
-        .nav-link { color: var(--text-white) !important; transition: 0.3s; }
-        .nav-link:hover, .nav-link.active { color: var(--primary-red) !important; }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* LOGO STYLING */
+        .brand {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .header-logo {
+            height: 70px; /* Much bigger logo */
+            width: auto;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        
+        .brand:hover .header-logo {
+            transform: scale(1.05);
+        }
+
+        /* MENU STYLING */
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .nav-link { 
+            color: var(--text-white) !important; 
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: 0.3s; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .nav-link:hover, .nav-link.active { 
+            color: var(--primary-red) !important; 
+        }
+        
         .nav-toggle span { background: white !important; }
+
+        /* MOBILE RESPONSIVENESS */
+        @media (max-width: 768px) {
+            .nav-menu { display: none; }
+            /* Bigger logo on mobile too */
+            .header-logo { height: 50px; } 
+            .navbar { height: 70px; }
+            body { padding-top: 70px; }
+        }
 
         /* 3. Global Footer Styling */
         .footer {
@@ -72,8 +141,8 @@
         /* 5. Clean Grid Layouts */
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Perfect spacing */
-            gap: 3rem; /* Even spaces */
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 3rem;
         }
     </style>
 </head>
@@ -83,8 +152,9 @@
 <nav class="navbar" id="navbar">
     <div class="nav-container">
         <?php $home_link = (basename(dirname($_SERVER['PHP_SELF'])) == 'admin') ? '../index.php' : 'index.php'; ?>
-        <a href="<?php echo $home_link; ?>" class="nav-logo">
-            <span>AsiaTech</span> Mechatronics
+        
+        <a href="<?php echo $home_link; ?>" class="brand">
+            <img src="images/logo.png" alt="IndustrialTech Logo" class="header-logo">
         </a>
 
         <ul class="nav-menu" id="navMenu">

@@ -23,7 +23,7 @@
             
             <div class="footer-about">
                 <a href="index.php" style="text-decoration: none; font-size: 1.8rem; font-weight: 800; color: #fff; display: block; margin-bottom: 1.5rem;">
-                    INDUSTRIAL<span style="color: #ff3333;">TECH</span>
+                   AsiaTech<span style="color: #ff3333;"> Mechatronics</span>
                 </a>
                 <p style="color: #888; line-height: 1.7; margin-bottom: 2rem; font-size: 0.95rem;">
                     Leading provider of industrial automation, mechatronics engineering, and custom electronics solutions for modern manufacturing.
