@@ -84,7 +84,7 @@
     <div class="nav-container">
         <?php $home_link = (basename(dirname($_SERVER['PHP_SELF'])) == 'admin') ? '../index.php' : 'index.php'; ?>
         <a href="<?php echo $home_link; ?>" class="nav-logo">
-            <span>INDUSTRIAL</span>TECH
+            <span>AsiaTech</span> Mechatronics
         </a>
 
         <ul class="nav-menu" id="navMenu">

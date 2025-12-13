@@ -45,6 +45,9 @@ include 'includes/header.php';
                                     ? "background-image: url('$imgFile');" 
                                     : "background: #222;"; 
 
+                        // PREVIEW TEXT HANDLER: Strip HTML tags and limit text
+                        $previewText = substr(strip_tags($row['content']), 0, 120) . '...';
+
                         echo '
                         <article style="
                             background: var(--bg-panel); 
@@ -72,10 +75,10 @@ include 'includes/header.php';
                                 </h3>
                                 
                                 <p style="color: #999; line-height: 1.6; margin-bottom: 2rem; flex-grow: 1;">
-                                    '.substr(htmlspecialchars($row['content']), 0, 100).'
+                                    '.$previewText.'
                                 </p>
                                 
-                                <a href="#" style="
+                                <a href="blog-details.php?id='.$row['id'].'" style="
                                     color: white; 
                                     text-decoration: none; 
                                     font-weight: 600; 

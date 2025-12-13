@@ -1,6 +1,6 @@
 <?php
 // Site Configuration
-define('SITE_NAME', 'IndustrialTech');
+define('SITE_NAME', 'AsiaTech Mechatronics');
 define('SITE_TAGLINE', 'Industrial Automation & Mechatronics Solutions');
 define('SITE_EMAIL', 'info@industrialtech.com');
 define('SITE_PHONE', '+1 (555) 123-4567');
