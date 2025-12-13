@@ -117,6 +117,8 @@ a:hover {
     padding: 0 var(--space-lg);
 }
 
+
+
 /* Sections */
 .section {
     padding: var(--space-3xl) 0;
@@ -345,6 +347,17 @@ a:hover {
 /* Hero Section */
 .hero {
     min-height: 100vh;
+    background: linear-gradient(135deg, var(--secondary-bg) 0%, #111827 100%);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding-top: 80px;
+}
+
+.blogheader{
+    min-height: 75vh;
     background: linear-gradient(135deg, var(--secondary-bg) 0%, #111827 100%);
     color: var(--white);
     display: flex;
