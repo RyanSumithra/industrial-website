@@ -466,3 +466,418 @@ window.throttle = function(func, limit) {
         }
     };
 };
+
+// ===== PROJECTS PAGE INTERACTIONS =====
+
+// Project Filtering
+function initProjectFilter() {
+    const filterTags = document.querySelectorAll('.filter-tag');
+    const projectCards = document.querySelectorAll('.project-card');
+    
+    if (filterTags.length === 0 || projectCards.length === 0) return;
+    
+    filterTags.forEach(tag => {
+        tag.addEventListener('click', () => {
+            // Update active state
+            filterTags.forEach(t => t.classList.remove('active'));
+            tag.classList.add('active');
+            
+            const filterValue = tag.dataset.filter;
+            
+            // Filter projects with animation
+            projectCards.forEach(card => {
+                const category = card.dataset.category;
+                
+                if (filterValue === 'all' || category === filterValue) {
+                    card.style.display = 'block';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 10);
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 300);
+                }
+            });
+            
+            // Update count
+            updateProjectCount(filterValue);
+        });
+    });
+}
+
+function updateProjectCount(filter) {
+    const projectCards = document.querySelectorAll('.project-card');
+    let visibleCount = 0;
+    
+    if (filter === 'all') {
+        visibleCount = projectCards.length;
+    } else {
+        projectCards.forEach(card => {
+            if (card.dataset.category === filter) {
+                visibleCount++;
+            }
+        });
+    }
+    
+    const countElement = document.querySelector('.stat-count:first-child');
+    if (countElement) {
+        countElement.textContent = visibleCount;
+    }
+}
+
+// Quick View Modal
+function initQuickView() {
+    const quickViewBtns = document.querySelectorAll('.project-quickview');
+    const modal = document.getElementById('projectModal');
+    const modalClose = modal?.querySelector('.modal-close');
+    
+    if (!modal || quickViewBtns.length === 0) return;
+    
+    quickViewBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const projectId = btn.dataset.project;
+            loadProjectDetails(projectId);
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+    });
+    
+    // Close modal
+    if (modalClose) {
+        modalClose.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+    }
+    
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+    
+    // Close on ESC key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.style.display === 'flex') {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+}
+
+function loadProjectDetails(projectId) {
+    // This would typically fetch from an API or database
+    // For now, we'll use static content
+    const projectData = {
+        '1': {
+            title: 'Automotive Assembly Line Automation',
+            category: 'Manufacturing',
+            client: 'AutoParts Inc.',
+            duration: '12 Weeks',
+            budget: '$500K',
+            description: 'Complete PLC-based automation system for high-speed automotive component assembly, achieving unprecedented efficiency and quality control.',
+            challenge: 'Manual processes causing 15% defect rates and production bottlenecks. Needed 24/7 operation with consistent quality.',
+            solution: 'Implemented Siemens S7-1500 PLC system with SCADA integration, robotic arms for precision assembly, and real-time quality monitoring.',
+            results: [
+                { metric: '35%', label: 'Efficiency Increase' },
+                { metric: '50%', label: 'Defect Reduction' },
+                { metric: '99.9%', label: 'System Uptime' },
+                { metric: '8 months', label: 'ROI Period' }
+            ],
+            technologies: ['Siemens S7-1500', 'SCADA System', 'Robotic Arms', 'Vision Systems', 'HMI Panels'],
+            image: '🏭'
+        }
+        // Add more project data as needed
+    };
+    
+    const project = projectData[projectId] || projectData['1'];
+    const modalBody = document.getElementById('modalBody');
+    
+    if (!modalBody) return;
+    
+    modalBody.innerHTML = `
+        <div class="modal-project">
+            <div class="modal-header">
+                <div class="modal-category">${project.category}</div>
+                <h2>${project.title}</h2>
+                <div class="modal-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Client:</span>
+                        <span class="meta-value">${project.client}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Duration:</span>
+                        <span class="meta-value">${project.duration}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Budget:</span>
+                        <span class="meta-value">${project.budget}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-image" style="background: linear-gradient(135deg, #4F46E5, #7C3AED);">
+                <div class="image-icon">${project.image}</div>
+            </div>
+            
+            <div class="modal-content">
+                <div class="section">
+                    <h3>Project Overview</h3>
+                    <p>${project.description}</p>
+                </div>
+                
+                <div class="section">
+                    <h3>The Challenge</h3>
+                    <p>${project.challenge}</p>
+                </div>
+                
+                <div class="section">
+                    <h3>Our Solution</h3>
+                    <p>${project.solution}</p>
+                </div>
+                
+                <div class="section">
+                    <h3>Key Results</h3>
+                    <div class="results-grid">
+                        ${project.results.map(result => `
+                            <div class="result-item">
+                                <div class="result-metric">${result.metric}</div>
+                                <div class="result-label">${result.label}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Technologies Used</h3>
+                    <div class="tech-tags">
+                        ${project.technologies.map(tech => `
+                            <span class="tech-tag">${tech}</span>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <a href="contact.php" class="btn btn-primary">Start Similar Project</a>
+                    <button class="btn btn-secondary modal-close-btn">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add event listener to close button inside modal
+    const closeBtn = modalBody.querySelector('.modal-close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            document.getElementById('projectModal').style.display = 'none';
+            document.body.style.overflow = '';
+        });
+    }
+}
+
+// Add modal CSS
+const modalCSS = `
+.modal-project {
+    padding: var(--space-lg);
+}
+
+.modal-header {
+    margin-bottom: var(--space-2xl);
+}
+
+.modal-category {
+    display: inline-block;
+    color: var(--accent-red);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: var(--space-sm);
+}
+
+.modal-header h2 {
+    font-size: 2rem;
+    margin-bottom: var(--space-lg);
+}
+
+.modal-meta {
+    display: flex;
+    gap: var(--space-xl);
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.meta-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.meta-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-image {
+    height: 200px;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-2xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-icon {
+    font-size: 4rem;
+    opacity: 0.8;
+}
+
+.modal-content .section {
+    margin-bottom: var(--space-2xl);
+}
+
+.modal-content h3 {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-lg);
+    color: var(--text-primary);
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-lg);
+}
+
+.result-item {
+    text-align: center;
+    padding: var(--space-lg);
+    background: var(--primary-bg);
+    border-radius: var(--radius-lg);
+}
+
+.result-metric {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent-red);
+    margin-bottom: var(--space-xs);
+}
+
+.result-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.tech-tags .tech-tag {
+    background: var(--gray-100);
+    color: var(--text-secondary);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.modal-actions {
+    display: flex;
+    gap: var(--space-lg);
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-2xl);
+    border-top: 1px solid var(--gray-200);
+}
+
+.modal-close-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--gray-300);
+}
+
+.modal-close-btn:hover {
+    background: var(--gray-100);
+}
+`;
+
+// Add modal CSS to document
+const styleSheet = document.createElement('style');
+styleSheet.textContent = modalCSS;
+document.head.appendChild(styleSheet);
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    initProjectFilter();
+    initQuickView();
+    
+    // Add scroll animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+            }
+        });
+    }, observerOptions);
+    
+    // Observe project cards
+    document.querySelectorAll('.project-card, .industry-card, .stat-card-large').forEach(el => {
+        observer.observe(el);
+    });
+});
+
+// Add animation CSS
+const animationCSS = `
+.animate-in {
+    animation: slideUp 0.6s ease forwards;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.project-card:nth-child(2) { animation-delay: 0.1s; }
+.project-card:nth-child(3) { animation-delay: 0.2s; }
+.project-card:nth-child(4) { animation-delay: 0.3s; }
+.project-card:nth-child(5) { animation-delay: 0.4s; }
+.project-card:nth-child(6) { animation-delay: 0.5s; }
+
+.industry-card:nth-child(2) { animation-delay: 0.1s; }
+.industry-card:nth-child(3) { animation-delay: 0.2s; }
+.industry-card:nth-child(4) { animation-delay: 0.3s; }
+.industry-card:nth-child(5) { animation-delay: 0.4s; }
+.industry-card:nth-child(6) { animation-delay: 0.5s; }
+
+.stat-card-large:nth-child(2) { animation-delay: 0.1s; }
+.stat-card-large:nth-child(3) { animation-delay: 0.2s; }
+.stat-card-large:nth-child(4) { animation-delay: 0.3s; }
+`;
+
+const animationStyle = document.createElement('style');
+animationStyle.textContent = animationCSS;
+document.head.appendChild(animationStyle);
