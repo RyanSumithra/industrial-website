@@ -1,80 +1,207 @@
 <?php 
 require_once 'includes/config.php';
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 $current_page = 'contact';
 $page_title = 'Contact Us | ' . SITE_NAME;
-$page_description = 'Get in touch with our industrial automation experts. We\'re here to help with your automation needs.';
 
-// Handle form submission message
-session_start();
-$success_message = isset($_GET['success']) ? true : false;
-$error_message = isset($_GET['error']) ? true : false;
-
-// Retrieve form data from session if exists
+// Handle form messages
+$success_message = isset($_GET['success']);
+$error_message = isset($_GET['error']);
 $form_data = $_SESSION['form_data'] ?? [];
 $form_errors = $_SESSION['form_errors'] ?? [];
 
-// Clear session data
 unset($_SESSION['form_data']);
 unset($_SESSION['form_errors']);
 
 include 'includes/header.php'; 
-include 'includes/navbar.php'; 
 ?>
 
-<!-- PAGE HEADER -->
+<style>
+    /* Animations */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-up { animation: fadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; }
+
+    /* Page Hero */
+    .page-hero {
+        background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
+                    repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(255, 51, 51, 0.03) 20px, rgba(255, 51, 51, 0.03) 21px),
+                    linear-gradient(180deg, #050505 0%, #111 100%);
+        padding: 100px 0 80px;
+        border-bottom: 1px solid #222;
+        text-align: center;
+    }
+    .page-hero h1 { font-size: 3.5rem; font-weight: 900; color: white; margin-bottom: 1rem; letter-spacing: -1px; }
+    .page-hero p { color: #888; font-size: 1.2rem; }
+
+    /* Layout */
+    .contact-wrapper { display: grid; grid-template-columns: 1fr 1.5fr; gap: 60px; margin-top: 40px; }
+    @media(max-width: 900px) { .contact-wrapper { grid-template-columns: 1fr; } }
+
+    /* Contact Info Cards */
+    .contact-info-header h2 { color: white; font-size: 2rem; font-weight: 800; margin-bottom: 15px; }
+    .contact-info-header p { color: #888; margin-bottom: 40px; line-height: 1.6; }
+
+    .contact-method {
+        display: flex; gap: 20px; margin-bottom: 30px;
+        background: #0a0a0a; padding: 25px; border-radius: 8px; border: 1px solid #222;
+        transition: 0.3s;
+    }
+    .contact-method:hover { border-color: var(--primary-red); transform: translateX(5px); }
+    
+    .method-icon {
+        width: 50px; height: 50px; background: #151515; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+        border: 1px solid #333; color: white;
+    }
+    .method-details h3 { color: white; font-size: 1.1rem; margin-bottom: 5px; font-weight: 700; }
+    .method-details p, .method-details address { color: #777; font-style: normal; margin: 0; font-size: 0.9rem; }
+    .method-details a { color: #ccc; text-decoration: none; transition: 0.3s; }
+    .method-details a:hover { color: var(--primary-red); }
+
+    /* Form Styles */
+    .contact-form-wrapper {
+        background: #111; padding: 40px; border-radius: 12px; border: 1px solid #222;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative;
+    }
+    .contact-form-wrapper::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+        background: linear-gradient(90deg, var(--primary-red), #990000);
+    }
+    .form-header h2 { color: white; margin-bottom: 10px; font-weight: 800; }
+    .form-header p { color: #666; margin-bottom: 30px; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media(max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+    label { display: block; color: #ccc; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; }
+    .required::after { content: " *"; color: var(--primary-red); }
+
+    input, select, textarea {
+        width: 100%; background: #0a0a0a; border: 1px solid #333; color: white;
+        padding: 12px 15px; border-radius: 4px; font-family: inherit; font-size: 0.95rem;
+        transition: 0.3s;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--primary-red); outline: none; background: #0f0f0f;
+        box-shadow: 0 0 10px rgba(255, 51, 51, 0.1);
+    }
+    
+    .btn-submit {
+        width: 100%; padding: 15px; font-size: 1rem; font-weight: 700;
+        display: flex; justify-content: center; align-items: center; gap: 10px;
+        margin-top: 10px; cursor: pointer;
+    }
+    .form-note { font-size: 0.8rem; color: #555; text-align: center; margin-top: 20px; }
+
+    /* --- NEW MAP SECTION STYLES --- */
+    .map-section { 
+        position: relative; 
+        height: 550px; 
+        width: 100%; 
+        overflow: hidden;
+        border-top: 1px solid #222;
+    }
+    
+    /* Dark Mode Map Filter */
+    .map-frame {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        filter: invert(90%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    }
+
+    /* Floating Location Card */
+    .map-overlay-card {
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        transform: translateY(-50%);
+        background: rgba(10, 10, 10, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 40px;
+        border-radius: 12px;
+        border: 1px solid #333;
+        border-left: 4px solid var(--primary-red);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        max-width: 400px;
+        z-index: 10;
+    }
+    @media(max-width: 768px) {
+        .map-overlay-card {
+            position: relative; top: auto; left: auto; transform: none;
+            width: 100%; max-width: 100%; border-radius: 0; border-left: none; border-bottom: 4px solid var(--primary-red);
+        }
+        .map-section { height: auto; display: flex; flex-direction: column-reverse; }
+        .map-frame { height: 400px; }
+    }
+
+    .location-pointer {
+        display: flex; align-items: center; gap: 15px; margin-bottom: 20px;
+    }
+    .pointer-icon { 
+        font-size: 2rem; 
+        animation: bounce 2s infinite; 
+    }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    .map-btn {
+        display: inline-flex; align-items: center; gap: 10px;
+        background: white; color: black; font-weight: 700;
+        padding: 12px 24px; border-radius: 4px; text-decoration: none;
+        margin-top: 20px; transition: 0.3s;
+    }
+    .map-btn:hover { background: #ccc; transform: translateY(-2px); }
+
+    .honeypot { display: none; }
+</style>
+
 <section class="page-hero">
-    <div class="container">
-        <div class="page-hero-content">
-            <h1>Contact Us</h1>
-            <p>Get in touch with our automation experts</p>
-        </div>
+    <div class="container animate-up">
+        <h1>Contact <span style="color: var(--primary-red);">Us</span></h1>
+        <p>Visit our Head Office in Dombivli or send us a message.</p>
     </div>
 </section>
 
-<!-- CONTACT SECTION -->
-<section class="section contact-section">
+<section class="section contact-section" style="background: #050505; padding: 60px 0 100px;">
     <div class="container">
+        
         <?php if ($success_message): ?>
-            <div class="alert alert-success">
-                <div class="alert-icon">✓</div>
-                <div class="alert-content">
-                    <strong>Thank you!</strong> Your message has been sent successfully. We'll get back to you within 24 hours.
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($error_message): ?>
-            <div class="alert alert-error">
-                <div class="alert-icon">⚠️</div>
-                <div class="alert-content">
-                    <strong>Error!</strong> Please check the form and try again.
-                    <?php if (!empty($form_errors)): ?>
-                        <ul class="error-list">
-                            <?php foreach ($form_errors as $error): ?>
-                                <li><?php echo htmlspecialchars($error); ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php endif; ?>
-                </div>
+            <div class="alert alert-success animate-up" style="background: rgba(40,167,69,0.1); border: 1px solid #28a745; color:#28a745; padding:15px; border-radius:6px; margin-bottom:30px;">
+                <strong>Message Sent!</strong> Thank you. We will respond within 24 hours.
             </div>
         <?php endif; ?>
 
         <div class="contact-wrapper">
-            <!-- Contact Information -->
-            <div class="contact-info">
+            
+            <div class="contact-info animate-up delay-1">
                 <div class="contact-info-header">
                     <h2>Get In Touch</h2>
-                    <p>Have a question or need assistance? Our team is here to help you with all your industrial automation needs.</p>
+                    <p>Ready to automate your operations? Reach out to our engineering team.</p>
                 </div>
 
                 <div class="contact-methods">
+                    <div class="contact-method">
+                        <div class="method-icon">📍</div>
+                        <div class="method-details">
+                            <h3>Head Office</h3>
+                            <address style="line-height: 1.5;">
+                                302, Pandurang Smruti C,<br>
+                                Dombivli East, Maharashtra 421203
+                            </address>
+                        </div>
+                    </div>
+
                     <div class="contact-method">
                         <div class="method-icon">📧</div>
                         <div class="method-details">
                             <h3>Email Us</h3>
                             <a href="mailto:<?php echo SITE_EMAIL; ?>"><?php echo SITE_EMAIL; ?></a>
-                            <p>Typically respond within 2 hours</p>
                         </div>
                     </div>
 
@@ -83,58 +210,18 @@ include 'includes/navbar.php';
                         <div class="method-details">
                             <h3>Call Us</h3>
                             <a href="tel:<?php echo SITE_PHONE; ?>"><?php echo SITE_PHONE; ?></a>
-                            <p>Monday - Friday, 8 AM - 6 PM EST</p>
                         </div>
-                    </div>
-
-                    <div class="contact-method">
-                        <div class="method-icon">📍</div>
-                        <div class="method-details">
-                            <h3>Visit Us</h3>
-                            <address><?php echo SITE_ADDRESS; ?></address>
-                            <p>Schedule an appointment first</p>
-                        </div>
-                    </div>
-
-                    <div class="contact-method">
-                        <div class="method-icon">🕒</div>
-                        <div class="method-details">
-                            <h3>Business Hours</h3>
-                            <p><strong>Monday - Friday:</strong> 8:00 AM - 6:00 PM</p>
-                            <p><strong>Saturday:</strong> 9:00 AM - 2:00 PM</p>
-                            <p><strong>Sunday:</strong> Closed</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="contact-social">
-                    <h3>Follow Us</h3>
-                    <div class="social-links">
-                        <a href="<?php echo SOCIAL_LINKEDIN; ?>" class="social-link" target="_blank">
-                            <span class="social-icon">💼</span>
-                            <span>LinkedIn</span>
-                        </a>
-                        <a href="<?php echo SOCIAL_TWITTER; ?>" class="social-link" target="_blank">
-                            <span class="social-icon">🐦</span>
-                            <span>Twitter</span>
-                        </a>
-                        <a href="<?php echo SOCIAL_INSTAGRAM; ?>" class="social-link" target="_blank">
-                            <span class="social-icon">📸</span>
-                            <span>Instagram</span>
-                        </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Contact Form -->
-            <div class="contact-form-wrapper">
+            <div class="contact-form-wrapper animate-up delay-2">
                 <div class="form-header">
-                    <h2>Send Us a Message</h2>
-                    <p>Fill out the form below and we'll get back to you as soon as possible.</p>
+                    <h2>Send a Message</h2>
+                    <p>Tell us about your project.</p>
                 </div>
 
-                <form method="POST" action="process-contact.php" id="contactForm" class="contact-form" novalidate>
-                    <!-- Honeypot field -->
+                <form method="POST" action="process-contact.php" id="contactForm">
                     <div class="honeypot">
                         <label for="website">Website</label>
                         <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
@@ -143,121 +230,54 @@ include 'includes/navbar.php';
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="name" class="required">Full Name</label>
-                            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($form_data['name'] ?? ''); ?>" required placeholder="Enter your full name">
-                            <div class="form-error" id="nameError"></div>
+                            <input type="text" id="name" name="name" required placeholder="John Doe">
                         </div>
-
                         <div class="form-group">
-                            <label for="email" class="required">Email Address</label>
-                            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($form_data['email'] ?? ''); ?>" required placeholder="you@company.com">
-                            <div class="form-error" id="emailError"></div>
+                            <label for="email" class="required">Email</label>
+                            <input type="email" id="email" name="email" required placeholder="john@company.com">
                         </div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" value="<?php echo htmlspecialchars($form_data['phone'] ?? ''); ?>" placeholder="+1 (555) 123-4567">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="company">Company Name</label>
-                            <input type="text" id="company" name="company" value="<?php echo htmlspecialchars($form_data['company'] ?? ''); ?>" placeholder="Your company name">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="service">Service Interest</label>
-                        <select id="service" name="service" class="form-select">
-                            <option value="">Select a service...</option>
-                            <option value="plc" <?php echo ($form_data['service'] ?? '') == 'plc' ? 'selected' : ''; ?>>PLC Automation</option>
-                            <option value="panels" <?php echo ($form_data['service'] ?? '') == 'panels' ? 'selected' : ''; ?>>Control Panels</option>
-                            <option value="electronics" <?php echo ($form_data['service'] ?? '') == 'electronics' ? 'selected' : ''; ?>>Custom Electronics</option>
-                            <option value="iot" <?php echo ($form_data['service'] ?? '') == 'iot' ? 'selected' : ''; ?>>IoT Solutions</option>
-                            <option value="consultation" <?php echo ($form_data['service'] ?? '') == 'consultation' ? 'selected' : ''; ?>>Consultation</option>
-                            <option value="other" <?php echo ($form_data['service'] ?? '') == 'other' ? 'selected' : ''; ?>>Other</option>
-                        </select>
                     </div>
 
                     <div class="form-group">
                         <label for="message" class="required">Message</label>
-                        <textarea id="message" name="message" rows="6" required placeholder="Tell us about your project or requirements..."><?php echo htmlspecialchars($form_data['message'] ?? ''); ?></textarea>
-                        <div class="char-counter">
-                            <span id="charCount">0</span>/1000 characters
-                        </div>
-                        <div class="form-error" id="messageError"></div>
+                        <textarea id="message" name="message" rows="5" required placeholder="How can we help you?"></textarea>
                     </div>
 
-                    <div class="form-group">
-                        <div class="form-checkbox">
-                            <input type="checkbox" id="newsletter" name="newsletter" checked>
-                            <label for="newsletter">Subscribe to our newsletter for updates and insights</label>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-submit">
-                        <span class="btn-text">Send Message</span>
-                        <span class="btn-loader" style="display: none;">
-                            <span class="loader-dot"></span>
-                            <span class="loader-dot"></span>
-                            <span class="loader-dot"></span>
-                        </span>
-                    </button>
-
-                    <p class="form-note">By submitting this form, you agree to our <a href="#" class="link">Privacy Policy</a>.</p>
+                    <button type="submit" class="btn-primary btn-submit">Send Message ➜</button>
                 </form>
             </div>
         </div>
     </div>
 </section>
 
-<!-- MAP SECTION (Optional) -->
-<section class="map-section">
-    <div class="container">
-        <div class="map-placeholder">
-            <div class="map-content">
-                <h3>Our Location</h3>
-                <p><?php echo SITE_ADDRESS; ?></p>
-                <a href="https://maps.google.com/?q=<?php echo urlencode(SITE_ADDRESS); ?>" target="_blank" class="btn btn-secondary btn-sm">
-                    <span>Open in Maps</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                        <circle cx="12" cy="10" r="3"/>
-                    </svg>
-                </a>
+<section class="map-section animate-up delay-2">
+    <div class="map-overlay-card">
+        <div class="location-pointer">
+            <div class="pointer-icon">📍</div>
+            <div>
+                <h3 style="color: white; margin: 0; font-size: 1.5rem; font-weight: 800;">Head Office</h3>
+                <span style="color: var(--primary-red); font-size: 0.9rem; text-transform: uppercase; font-weight: 700;">asiaTech Mecha</span>
             </div>
-            <div class="map-visual">🗺️</div>
-        </div>
-    </div>
-</section>
-
-<!-- FAQ SECTION -->
-<section class="section faq-section">
-    <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Frequently Asked Questions</h2>
-            <p class="section-subtitle">Quick answers to common questions</p>
         </div>
         
-        <div class="faq-grid">
-            <div class="faq-item">
-                <h3>What is your typical project timeline?</h3>
-                <p>Project timelines vary based on complexity. Small projects take 4-8 weeks, while larger implementations may take 3-6 months. We provide detailed timelines during consultation.</p>
-            </div>
-            <div class="faq-item">
-                <h3>Do you offer emergency support?</h3>
-                <p>Yes, we provide 24/7 emergency support for all our clients. Our response time is typically under 2 hours for critical issues.</p>
-            </div>
-            <div class="faq-item">
-                <h3>What industries do you serve?</h3>
-                <p>We serve manufacturing, energy, food & beverage, pharmaceuticals, automotive, and logistics industries among others.</p>
-            </div>
-            <div class="faq-item">
-                <h3>Do you provide training?</h3>
-                <p>Yes, comprehensive training is included with every project to ensure your team can operate and maintain the systems effectively.</p>
-            </div>
-        </div>
+        <p style="color: #ccc; line-height: 1.6; margin-bottom: 25px; font-size: 1rem;">
+            302, Pandurang Smruti C, H.S,<br>
+            Dawadi Gaon Rd, near Regency Estate,<br>
+            Shivshakti Nagar, Sonar Pada,<br>
+            Dombivli East, Maharashtra 421203
+        </p>
+        
+        <a href="https://www.google.com/maps/search/?api=1&query=302+Pandurang+Smruti+C+Dombivli+East+421203" target="_blank" class="map-btn">
+            Get Directions ↗
+        </a>
     </div>
+
+    <iframe 
+        class="map-frame"
+        src="https://maps.google.com/maps?q=302%2C%20Pandurang%20Smruti%20C%2C%20H.S%2C%20Dawadi%20Gaon%20Rd%2C%20near%20Regency%20Estate%2C%20Shivshakti%20Nagar%2C%20Sonar%20Pada%2C%20Dombivli%20East%2C%20Dombivli%2C%20Maharashtra%20421203&t=&z=15&ie=UTF8&iwloc=&output=embed"
+        allowfullscreen
+        loading="lazy">
+    </iframe>
 </section>
 
 <?php include 'includes/footer.php'; ?>
