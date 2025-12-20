@@ -175,49 +175,80 @@ if (isset($_GET['reset'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* --- THEME VARIABLES --- */
         :root {
             --primary: #ff3333;
-            --bg-dark: #0a0a0a;
-            --card-bg: #111111;
-            --border-color: #222;
-            --text-light: #ffffff;
-            --text-muted: #888;
-            --border-radius: 12px;
-            --font-sans: 'Inter', sans-serif;
+            --bg-body: #0a0a0a;
+            --bg-card: #111111;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --border-color: #222222;
+            --input-bg: #050505;
+            --shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        /* LIGHT MODE OVERRIDES */
+        body.light-mode {
+            --bg-body: #f4f6f9;
+            --bg-card: #ffffff;
+            --text-main: #111111;
+            --text-muted: #666666;
+            --border-color: #e0e0e0;
+            --input-bg: #f8f9fa;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
 
         body { 
-            background: var(--bg-dark);
-            color: var(--text-light); 
-            font-family: var(--font-sans); 
+            background: var(--bg-body);
+            color: var(--text-main); 
+            font-family: 'Inter', sans-serif; 
             display: flex; 
             flex-direction: column;
             min-height: 100vh; 
             align-items: center; 
             justify-content: center; 
             margin: 0;
-            /* Subtle background texture instead of sci-fi grid */
-            background-image: radial-gradient(circle at top center, #1a1a1a 0%, #0a0a0a 70%);
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
+        /* Toggle Button */
+        .theme-toggle {
+            position: absolute; top: 20px; right: 20px;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            color: var(--text-main); padding: 10px; border-radius: 50%;
+            cursor: pointer; width: 45px; height: 45px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .theme-toggle:hover { border-color: var(--primary); color: var(--primary); }
+
         .login-card { 
-            background: var(--card-bg); 
+            background: var(--bg-card); 
             padding: 45px 40px; 
             width: 100%; 
             max-width: 400px; 
-            border-radius: var(--border-radius);
+            border-radius: 12px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            box-shadow: var(--shadow);
+            transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
         }
         
-        /* Header */
+        /* Responsive Card */
+        @media (max-width: 480px) {
+            .login-card {
+                max-width: 90%;
+                padding: 30px 20px;
+            }
+            .theme-toggle { top: 15px; right: 15px; width: 40px; height: 40px; font-size: 1rem; }
+        }
+        
         .card-header { text-align: center; margin-bottom: 35px; }
         .card-title { 
-            margin: 0; font-size: 1.8rem; font-weight: 700; color: white; letter-spacing: -0.5px;
+            margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;
         }
         .card-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 10px; }
 
-        /* Forms */
         .form-group { margin-bottom: 25px; }
         
         label { 
@@ -226,13 +257,13 @@ if (isset($_GET['reset'])) {
         }
         
         input { 
-            width: 100%; padding: 14px 16px; background: #050505; border: 1px solid var(--border-color); 
-            color: var(--text-light); border-radius: 8px; box-sizing: border-box; 
-            font-family: var(--font-sans); font-size: 1rem; transition: 0.3s;
+            width: 100%; padding: 14px 16px; background: var(--input-bg); 
+            border: 1px solid var(--border-color); 
+            color: var(--text-main); border-radius: 8px; box-sizing: border-box; 
+            font-family: inherit; font-size: 1rem; transition: 0.3s;
         }
-        input:focus { border-color: var(--primary); outline: none; background: #080808; }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(255, 51, 51, 0.1); }
         
-        /* OTP Specific Input Style */
         .otp-input { 
             font-size: 1.5rem; letter-spacing: 8px; text-align: center; font-weight: 700;
         }
@@ -240,19 +271,20 @@ if (isset($_GET['reset'])) {
         .btn-submit { 
             width: 100%; padding: 14px; background: var(--primary); color: white; border: none; 
             border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem;
-            transition: 0.2s;
+            transition: 0.2s; margin-top: 10px;
         }
-        .btn-submit:hover { background: #e60000; }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
         
         .error-box { 
             background: rgba(255,51,51,0.1); color: var(--primary); padding: 14px; 
             text-align: center; margin-bottom: 25px; font-size: 0.9rem; border-radius: 8px; font-weight: 500;
+            border: 1px solid rgba(255, 51, 51, 0.2);
         }
         
-        .captcha-container { display: flex; justify-content: center; margin-bottom: 25px; }
-        .g-recaptcha { transform: scale(0.9); transform-origin: 0 0; }
+        .captcha-container { display: flex; justify-content: center; margin-bottom: 25px; overflow: hidden; }
+        /* Scale captcha on mobile so it fits */
+        @media (max-width: 400px) { .g-recaptcha { transform: scale(0.85); transform-origin: 50% 50%; } }
 
-        /* Return Link */
         .return-link {
             margin-top: 30px;
             color: var(--text-muted);
@@ -268,6 +300,10 @@ if (isset($_GET['reset'])) {
     </style>
 </head>
 <body>
+
+    <button class="theme-toggle" onclick="toggleTheme()" title="Switch Theme">
+        <span id="theme-icon">☀</span>
+    </button>
 
     <div class="login-card">
         
@@ -293,7 +329,7 @@ if (isset($_GET['reset'])) {
                 </div>
 
                 <div class="captcha-container">
-                    <div class="g-recaptcha" data-theme="dark" data-sitekey="<?= RECAPTCHA_SITE_KEY ?>"></div>
+                    <div class="g-recaptcha" data-sitekey="<?= RECAPTCHA_SITE_KEY ?>"></div>
                 </div>
 
                 <button type="submit" class="btn-submit">Log In</button>
@@ -301,10 +337,10 @@ if (isset($_GET['reset'])) {
 
         <?php else: ?>
             <div class="card-header">
-                <h2 class="card-title">Two-Factor Authentication</h2>
+                <h2 class="card-title">Two-Factor Auth</h2>
                 <p class="card-subtitle">
                     We sent a 6-digit code to your email: <br>
-                    <span style="color:white; font-weight:600;"><?= htmlspecialchars(substr(ADMIN_EMAIL, 0, 3) . '***@' . explode('@', ADMIN_EMAIL)[1]) ?></span>
+                    <span style="color:var(--primary); font-weight:600;"><?= htmlspecialchars(substr(ADMIN_EMAIL, 0, 3) . '***@' . explode('@', ADMIN_EMAIL)[1]) ?></span>
                 </p>
             </div>
 
@@ -328,6 +364,26 @@ if (isset($_GET['reset'])) {
     </div>
 
     <a href="../index.php" class="return-link">Back to Website</a>
+
+    <script>
+        // Check local storage for theme preference
+        const currentTheme = localStorage.getItem('theme');
+        const icon = document.getElementById('theme-icon');
+        
+        if (currentTheme === 'light') {
+            document.body.classList.add('light-mode');
+            icon.innerText = '🌙';
+        } else {
+            icon.innerText = '☀';
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            icon.innerText = isLight ? '🌙' : '☀';
+        }
+    </script>
 
 </body>
 </html>
