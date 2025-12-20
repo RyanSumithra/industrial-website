@@ -2,8 +2,8 @@
 // Site Configuration
 define('SITE_NAME', 'techAsia Mechatronics');
 define('SITE_TAGLINE', 'Industrial Automation & Mechatronics Solutions');
-define('SITE_EMAIL', 'patilpouras145@gmail.com');
-define('SITE_PHONE', '+91 9970449882');
+define('SITE_EMAIL', '');
+define('SITE_PHONE', '');
 define('SITE_ADDRESS', '302, Pandurang Smruti C, H.S, Dawadi Gaon Rd, near Regency Estate, Shivshakti Nagar, Sonar Pada, Dombivli East, Dombivli, Maharashtra 421203');
 
 // Social Media
