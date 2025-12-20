@@ -2,653 +2,741 @@
 require_once 'includes/config.php';
 
 $current_page = 'projects';
-$page_title = 'Projects & Case Studies | ' . SITE_NAME;
-$page_description = 'Explore our portfolio of successful industrial automation projects across various industries.';
-$page_keywords = 'automation projects, case studies, portfolio, industrial solutions';
+$page_title = 'Project Portfolio | ' . SITE_NAME;
 
 include 'includes/header.php'; 
 ?>
 
 <style>
-    /* Animations */
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-up { animation: fadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; }
-    
-    /* 1. Global & Utilities */
-    body { background-color: #050505; color: #fff; }
-    .text-accent { color: #ff3333; text-shadow: 0 0 20px rgba(255, 51, 51, 0.4); }
-    .text-glow { text-shadow: 0 0 30px rgba(255, 255, 255, 0.1); }
+    /* --- VARIABLES & THEME SETUP --- */
+    :root {
+        --mono: 'JetBrains Mono', 'Courier New', monospace;
+        --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    }
 
-    /* 2. Page Hero */
+    body {
+        background-color: var(--bg-body);
+        color: var(--text-main);
+        font-family: var(--sans);
+        margin: 0;
+        overflow-x: hidden;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* --- HERO SECTION (Centered) --- */
     .page-hero {
-        background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
-                    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 51, 51, 0.05) 10px, rgba(255, 51, 51, 0.05) 11px),
-                    linear-gradient(180deg, #050505 0%, #111 100%);
-        padding: 120px 0 100px;
-        border-bottom: 1px solid #222;
-        text-align: center;
         position: relative;
-    }
-    .hero-badge span {
-        background: rgba(255, 51, 51, 0.1); color: var(--primary-red);
-        border: 1px solid var(--primary-red); padding: 8px 16px;
-        border-radius: 50px; font-size: 0.8rem; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 1.5px;
-    }
-    .page-hero h1 { font-size: 3.5rem; font-weight: 900; color: white; margin: 1.5rem 0 1rem; letter-spacing: -1px; }
-    .page-hero p { color: #888; font-size: 1.2rem; max-width: 600px; margin: 0 auto; }
-
-    /* Hero Stats (Top) */
-    .hero-stats {
-        display: flex; justify-content: center; gap: 40px; margin-top: 50px; flex-wrap: wrap;
-    }
-    .stat-card {
-        background: rgba(20, 20, 20, 0.8); border: 1px solid #333; padding: 20px 30px;
-        border-radius: 8px; backdrop-filter: blur(5px);
-    }
-    .stat-number { font-size: 2rem; font-weight: 800; color: white; }
-    .stat-label { font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-
-    /* Waves */
-    .hero-waves {
-        position: absolute; bottom: 0; left: 0; width: 100%; overflow: hidden; line-height: 0;
-        color: #080808; 
-    }
-
-    /* 3. Filter Section */
-    .filter-section { background: #080808; padding: 40px 0; border-bottom: 1px solid #1a1a1a; top: 0; z-index: 50; }
-    .filter-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-    
-    .filter-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-    .filter-tag {
-        background: #111; border: 1px solid #333; color: #888;
-        padding: 10px 20px; border-radius: 50px; cursor: pointer;
-        font-weight: 600; font-size: 0.9rem; transition: 0.3s;
-        display: flex; align-items: center; gap: 8px;
-    }
-    .filter-tag:hover, .filter-tag.active {
-        background: rgba(255, 51, 51, 0.1); border-color: var(--primary-red); color: white;
-        box-shadow: 0 0 15px rgba(255, 51, 51, 0.2);
-    }
-    .filter-stats {
-    display: flex;
-    justify-content: center;
-    gap: 50px;
-    border-top: 1px solid #222;
-    padding-top: 30px;
-}
-
-/* Bubble container */
-.stat-bubble {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: #fff;
-    padding: 12px 28px;
-    border-radius: 50px;
-}
-
-/* PERFECT CIRCLE */
-.stat-count {
-    width: 36px;
-    height: 36px;
-    background: #ff3333;
-    color: #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 1rem;
-    line-height: 1; /* IMPORTANT */
-    flex-shrink: 0;
-}
-
-/* Text */
-.stat-bubble span {
-    color: #666;
-    font-size: 0.9rem;
-    white-space: nowrap;
-}
-
-
-    /* 4. Project Grid */
-    .projects-showcase { background: #050505; padding: 80px 0; }
-    .projects-grid { 
-        display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
-        gap: 30px; margin-top: 40px; 
-    }
-    
-    .project-card {
-        background: #111; border: 1px solid #222; border-radius: 12px; overflow: hidden;
-        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
-        display: flex; flex-direction: column;
-    }
-    .project-card:hover { transform: translateY(-7px); border-color: var(--primary-red); box-shadow: 0 10px 30px rgba(255,51,51,0.15); }
-    
-    .featured-card { grid-column: span 2; }
-    @media(max-width: 900px) { .featured-card { grid-column: span 1; } }
-
-    .project-media { position: relative; height: 240px; overflow: hidden; }
-    .featured-card .project-media { height: 350px; }
-    
-    .project-image {
-        width: 100%; height: 100%; 
-        background-size: cover; background-position: center;
-        transition: 0.5s;
-    }
-    .project-card:hover .project-image { transform: scale(1.05); }
-    
-    .image-overlay {
-        position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px;
-        background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-        display: flex; align-items: end; justify-content: space-between;
-    }
-    
-    .industry-icon { font-size: 1.5rem; background: rgba(255,255,255,0.1); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; backdrop-filter: blur(5px); }
-    .project-duration { color: #ccc; font-size: 0.8rem; font-weight: 600; background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 4px; }
-
-    .project-content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
-    .project-meta { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
-    .project-category { color: var(--primary-red); font-weight: 700; }
-    .project-client { color: #666; }
-
-    .project-title { color: white; font-size: 1.4rem; margin-bottom: 10px; line-height: 1.3; }
-    .project-description { color: #888; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px; }
-
-    .project-tech-stack { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
-    .tech-badge { background: #1a1a1a; color: #ccc; border: 1px solid #333; padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; }
-
-    .project-footer { 
-        margin-top: 20px; padding-top: 20px; border-top: 1px solid #222; 
-        display: flex; justify-content: space-between; align-items: center; 
-    }
-    .project-link { color: white; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 5px; transition: 0.3s; font-size: 0.9rem; }
-    .project-link:hover { color: var(--primary-red); gap: 10px; }
-
-    /* 5. Stats Showcase (FIXED LAYOUT) */
-    .stats-showcase { 
-        background: #080808; 
-        padding: 80px 0; 
-        border-top: 1px solid #1a1a1a; 
-        border-bottom: 1px solid #1a1a1a; 
+        min-height: 60vh; /* Force height for vertical centering */
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Vertical Center */
+        align-items: center;     /* Horizontal Center */
+        text-align: center;
+        padding: 100px 5%;
+        background: var(--bg-body);
+        border-bottom: 1px solid var(--border-color);
         overflow: hidden;
     }
-    .stats-grid { 
-        display: flex; 
-        flex-wrap: wrap; 
-        justify-content: center; 
-        gap: 30px; 
+    
+    /* Tech Grid Background */
+    .page-hero::before {
+        content: ''; position: absolute; inset: 0;
+        background-image: 
+            linear-gradient(var(--border-color) 1px, transparent 1px),
+            linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+        background-size: 40px 40px;
+        opacity: 0.1;
+        z-index: 0;
     }
-    .stat-card-large { 
-        flex: 1 1 250px; 
-        max-width: 350px;
-        text-align: center; 
-        background: rgba(255, 255, 255, 0.03); 
-        border: 1px solid #222;
-        padding: 40px 20px;
-        border-radius: 16px;
-        transition: all 0.3s ease;
+
+    .page-hero-overlay {
+        position: absolute; inset: 0;
+        background: radial-gradient(circle at 50% 50%, rgba(255, 51, 51, 0.05), var(--bg-body) 70%);
+        z-index: 1;
     }
-    .stat-card-large:hover {
-        transform: translateY(-10px);
-        border-color: #ff3333;
-        background: rgba(255, 51, 51, 0.05);
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    
+    /* Light Mode Hero Override */
+    body.light-mode .page-hero-overlay {
+        background: radial-gradient(circle at 50% 50%, rgba(255, 51, 51, 0.05), rgba(255,255,255,0) 70%);
     }
-    .stat-icon { 
-        font-size: 3rem; 
-        margin-bottom: 20px; 
-        filter: grayscale(100%); 
-        transition: 0.3s; 
+
+    .hero-content { 
+        position: relative; 
+        z-index: 2; 
+        width: 100%;
+        max-width: 900px; /* Constrain width for centering */
+    }
+
+    .hero-badge {
         display: inline-block;
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        color: var(--primary-red);
+        background: rgba(255, 51, 51, 0.1);
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 51, 51, 0.2);
+        margin-bottom: 20px;
     }
-    .stat-card-large:hover .stat-icon { filter: grayscale(0); transform: scale(1.2); }
-    .stat-card-large .stat-number { font-size: 3.5rem; font-weight: 900; color: #ff3333; line-height: 1; margin-bottom: 10px; }
-    .stat-card-large .stat-label { color: #fff; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; margin-bottom: 10px; display: block; }
-    .stat-trend { color: #666; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 4px 12px; border-radius: 20px; }
 
-    /* 6. Industry Grid */
-    .industries-section { background: #050505; padding: 100px 0; }
-    .industries-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
-    .industry-card { background: #111; padding: 30px; border-radius: 12px; border: 1px solid #222; transition: 0.3s; text-align: center; }
-    .industry-card:hover { border-color: #ff3333; transform: translateY(-5px); background: #161616; }
-    .industry-content h3 { color: white; margin: 15px 0 10px; }
-    .industry-content p { color: #777; font-size: 0.9rem; margin-bottom: 15px; }
-    .project-count { background: rgba(255, 51, 51, 0.1); color: #ff3333; display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
-
-    /* 7. Process Timeline */
-    .process-section { background: #080808; padding: 100px 0; border-top: 1px solid #222; }
-    .process-timeline { max-width: 800px; margin: 50px auto 0; position: relative; }
-    .process-timeline::before { content: ''; position: absolute; left: 29px; top: 0; height: 100%; width: 2px; background: #222; }
-    
-    .process-step { display: flex; gap: 40px; margin-bottom: 50px; position: relative; }
-    .step-number { 
-        width: 60px; height: 60px; background: #050505; border: 2px solid #ff3333; border-radius: 50%; 
-        display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800; color: #ff3333; 
-        z-index: 2; flex-shrink: 0; box-shadow: 0 0 20px rgba(255,51,51,0.2);
+    .page-hero h1 {
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        font-weight: 900;
+        color: var(--text-main);
+        margin-bottom: 20px;
+        letter-spacing: -1px;
     }
-    .step-content { background: #111; padding: 30px; border-radius: 8px; border: 1px solid #222; flex-grow: 1; transition: 0.3s; }
-    .step-content:hover { border-color: #ff3333; transform: translateX(10px); }
-    .step-content h3 { color: white; margin-bottom: 10px; }
-    .step-features li { color: #888; margin-bottom: 5px; font-size: 0.9rem; list-style: none; position: relative; padding-left: 15px; }
-    .step-features li::before { content: '•'; color: #ff3333; position: absolute; left: 0; }
 
-    /* 8. CTA */
-    .cta-section { background: linear-gradient(135deg, #cc0000, #990000); padding: 100px 0; text-align: center; }
-    .cta-content h2 { color: white; font-size: 3rem; font-weight: 900; margin-bottom: 1rem; }
-    .cta-content p { color: rgba(255,255,255,0.9); font-size: 1.2rem; margin-bottom: 40px; }
+    .hero-subtitle {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto 50px;
+        line-height: 1.6;
+    }
+
+    .hero-stats {
+        display: flex; justify-content: center; gap: 50px; flex-wrap: wrap;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat-number { font-size: 2.5rem; font-weight: 800; color: var(--primary-red); line-height: 1; }
+    .hero-stat-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-top: 8px; letter-spacing: 1px; font-weight: 600; }
+
+    /* --- CATEGORY NAVIGATION --- */
+    .category-nav {
+        position: sticky; top: 80px; z-index: 90;
+        background: var(--nav-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border-color);
+        padding: 15px 0;
+        margin-bottom: 40px;
+    }
+
+    .category-tabs {
+        display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+    }
+
+    .category-tab {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        color: var(--text-muted);
+        padding: 10px 24px;
+        border-radius: 50px;
+        font-weight: 600; font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex; align-items: center; gap: 8px;
+    }
+
+    .category-tab:hover {
+        border-color: var(--primary-red);
+        color: var(--text-main);
+        background: var(--bg-surface-2);
+    }
+
+    .category-tab.active {
+        background: var(--primary-red);
+        border-color: var(--primary-red);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 51, 51, 0.3);
+    }
+
+    /* --- PROJECTS GRID --- */
+    .projects-container {
+        padding-bottom: 80px;
+    }
+
+    .category-header {
+        text-align: center; margin-bottom: 40px; padding-top: 20px;
+        display: none; /* Hidden by default, shown via JS */
+    }
+    .category-header.active { display: block; }
+
+    .category-title {
+        font-size: 1.8rem; font-weight: 800; color: var(--text-main); margin-bottom: 10px;
+    }
+    .category-desc { color: var(--text-muted); }
+
+    .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px;
+        max-width: 1400px; margin: 0 auto;
+    }
+
+    /* --- PROJECT CARD --- */
+    .project-card {
+        background: var(--bg-surface-2);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex; flex-direction: column;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .project-card:hover {
+        transform: translateY(-8px);
+        border-color: var(--primary-red);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    body.light-mode .project-card:hover {
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .project-image-wrap {
+        height: 180px; width: 100%;
+        position: relative; overflow: hidden;
+        background: #000;
+        border-bottom: 1px solid var(--border-color);
+    }
     
-    /* Buttons */
-    .btn { display: inline-flex; align-items: center; gap: 10px; padding: 12px 28px; border-radius: 6px; font-weight: 700; text-decoration: none; transition: 0.3s; cursor: pointer; }
-    .btn-primary { background: #ff3333; color: white; border: none; }
-    .btn-primary:hover { background: #e60000; box-shadow: 0 0 20px rgba(255, 51, 51, 0.4); }
-    .btn-secondary { background: transparent; border: 1px solid rgba(255,255,255,0.5); color: white; }
-    .btn-secondary:hover { background: white; color: #cc0000; }
-    .btn-white { background: white; color: #cc0000; border: none; }
-    .btn-white:hover { background: #eee; }
+    .project-image-wrap img {
+        width: 100%; height: 100%; object-fit: cover;
+        transition: transform 0.6s ease;
+        opacity: 0.9;
+    }
+    body.light-mode .project-image-wrap img { opacity: 1; }
+    
+    .project-card:hover .project-image-wrap img {
+        transform: scale(1.1); opacity: 1;
+    }
+
+    .project-badge {
+        position: absolute; top: 15px; left: 15px;
+        background: rgba(255, 51, 51, 0.9);
+        color: white; padding: 4px 10px; border-radius: 4px;
+        font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .project-content {
+        padding: 25px;
+        display: flex; flex-direction: column; flex-grow: 1;
+    }
+
+    .project-title {
+        font-size: 1.1rem; font-weight: 700; color: var(--text-main);
+        margin: 0 0 10px 0; line-height: 1.3;
+    }
+
+    .project-desc {
+        font-size: 0.9rem; color: var(--text-muted);
+        line-height: 1.6; margin-bottom: 20px; flex-grow: 1;
+    }
+
+    .project-tech {
+        display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+    }
+    .tech-pill {
+        font-size: 0.75rem; color: var(--text-muted);
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        padding: 4px 10px; border-radius: 50px;
+    }
+
+    .project-footer {
+        border-top: 1px solid var(--border-color);
+        padding-top: 15px; margin-top: auto;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    
+    .project-link {
+        color: var(--primary-red); font-weight: 700; font-size: 0.85rem;
+        text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px;
+        display: flex; align-items: center; gap: 5px; transition: gap 0.2s;
+    }
+    .project-link:hover { gap: 8px; }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 768px) {
+        .page-hero { padding: 80px 20px 40px; min-height: auto; }
+        .hero-stats { gap: 25px; }
+        .hero-stat-number { font-size: 2rem; }
+        .category-nav { top: 70px; overflow-x: auto; padding: 15px 20px; justify-content: flex-start; }
+        .category-tabs { flex-wrap: nowrap; padding-bottom: 5px; }
+        .category-tab { white-space: nowrap; }
+    }
+    
+    /* Animation Utility */
+    .fade-in { animation: fadeIn 0.5s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 
-<section class="page-hero projects-hero">
-    <div class="container">
-        <div class="page-hero-content animated-content">
-            <div class="hero-badge pulse-animation">
-                <span>🏆 Award-Winning Projects</span>
-            </div>
-            <h1 class="text-glow">Our <span class="text-accent">Projects</span></h1>
-            <p class="hero-subtitle">Real-world automation solutions delivering measurable results.</p>
-            <div class="hero-stats">
-                <div class="stat-card">
-                    <div class="stat-number">200+</div>
-                    <div class="stat-label">Projects Completed</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">98%</div>
-                    <div class="stat-label">Client Satisfaction</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">15</div>
-                    <div class="stat-label">Industries Served</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="hero-waves">
-        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".1" fill="currentColor"></path>
-            <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".2" fill="currentColor"></path>
-            <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" opacity=".8" fill="#080808"></path>
-        </svg>
-    </div>
-</section>
-
-<section class="section filter-section">
-    <div class="container">
-        <div class="filter-container">
-            <div class="filter-tags">
-                <button class="filter-tag active" onclick="filterProjects('all', this)">
-                    <span class="filter-icon">⭐</span> All Projects
-                </button>
-                <button class="filter-tag" onclick="filterProjects('manufacturing', this)">
-                    <span class="filter-icon">🏭</span> Manufacturing
-                </button>
-                <button class="filter-tag" onclick="filterProjects('energy', this)">
-                    <span class="filter-icon">⚡</span> Energy
-                </button>
-                <button class="filter-tag" onclick="filterProjects('iot', this)">
-                    <span class="filter-icon">🌐</span> IoT
-                </button>
-                <button class="filter-tag" onclick="filterProjects('food', this)">
-                    <span class="filter-icon">🥤</span> Food & Bev
-                </button>
-                <button class="filter-tag" onclick="filterProjects('automotive', this)">
-                    <span class="filter-icon">🚗</span> Automotive
-                </button>
-            </div>
-            
-            <div class="filter-stats">
-                <div class="stat-bubble">
-                    <div class="stat-count">6</div>
-                    <span>Featured Projects</span>
-                </div>
-            
-                <div class="stat-bubble">
-                    <div class="stat-count">15+</div>
-                    <span>Years Experience</span>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</section>
-
-<section class="section projects-showcase">
-    <div class="container">
-        <div class="showcase-header" style="text-align:center; margin-bottom:50px;">
-            <div class="section-label" style="color:#ff3333; font-weight:700; text-transform:uppercase;">Featured Work</div>
-            <h2 class="section-title" style="font-size:2.5rem; color:white;">Success <span class="text-accent">Stories</span></h2>
-            <p class="section-subtitle" style="color:#888;">Discover how we've transformed manufacturing processes.</p>
-        </div>
-
-        <div class="projects-grid">
-            <div class="project-card featured-card" data-category="manufacturing">
-                <div class="project-media">
-                    <div class="project-image" style="background: linear-gradient(135deg, #990000, #ff3333);">
-                        <div class="image-overlay">
-                            <div class="industry-icon">🏭</div>
-                            <div class="project-duration">12 Weeks • Large Scale</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-content">
-                    <div class="project-meta">
-                        <span class="project-category">Manufacturing</span>
-                        <span class="project-client">AutoParts Inc.</span>
-                    </div>
-                    <h3 class="project-title">Automotive Assembly Line</h3>
-                    <p class="project-description">Complete PLC-based automation system for high-speed component assembly, achieving unprecedented efficiency.</p>
-                    
-                    <div class="project-results-grid">
-                        <div class="result-metric">
-                            <div class="metric-value">35%</div>
-                            <div class="metric-label">Efficiency</div>
-                        </div>
-                        <div class="result-metric">
-                            <div class="metric-value">50%</div>
-                            <div class="metric-label">Defects ↓</div>
-                        </div>
-                        <div class="result-metric">
-                            <div class="metric-value">99.9%</div>
-                            <div class="metric-label">Uptime</div>
-                        </div>
-                    </div>
-                    
-                    <div class="project-cta" style="margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
-                        <a href="#" class="btn btn-primary" style="padding: 10px 20px; font-size:0.9rem;">
-                            View Case Study
-                        </a>
-                        <div class="project-tech-stack">
-                            <span class="tech-badge">Siemens S7</span>
-                            <span class="tech-badge">SCADA</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="project-card" data-category="energy">
-                <div class="project-media">
-                    <div class="project-image" style="background: linear-gradient(135deg, #cc0000, #ff6600);">
-                        <div class="image-overlay">
-                            <div class="industry-icon">⚡</div>
-                            <div class="project-duration">10MW System</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-content">
-                    <div class="project-meta">
-                        <span class="project-category">Energy</span>
-                        <span class="project-client">PowerGrid</span>
-                    </div>
-                    <h3 class="project-title">Smart Power Distribution</h3>
-                    <p class="project-description">Advanced control panel design for industrial power distribution.</p>
-                    
-                    <div class="project-highlights">
-                        <div class="highlight"><span class="highlight-icon">✅</span> 99.9% uptime</div>
-                        <div class="highlight"><span class="highlight-icon">✅</span> 15% savings</div>
-                    </div>
-                    
-                    <div class="project-footer">
-                        <span class="tech-badge">Allen-Bradley</span>
-                        <a href="#" class="project-link">Details &rarr;</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="project-card" data-category="iot">
-                <div class="project-media">
-                    <div class="project-image" style="background: linear-gradient(135deg, #111, #333);">
-                        <div class="image-overlay">
-                            <div class="industry-icon">🌐</div>
-                            <div class="project-duration">500+ Sensors</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-content">
-                    <div class="project-meta">
-                        <span class="project-category">IoT Solutions</span>
-                        <span class="project-client">Precision Mfg</span>
-                    </div>
-                    <h3 class="project-title">Smart Factory Platform</h3>
-                    <p class="project-description">Real-time monitoring and predictive maintenance for manufacturing.</p>
-                    
-                    <div class="project-highlights">
-                        <div class="highlight"><span class="highlight-icon">✅</span> 40% downtime ↓</div>
-                        <div class="highlight"><span class="highlight-icon">✅</span> Cloud Analytics</div>
-                    </div>
-                    
-                    <div class="project-footer">
-                        <span class="tech-badge">AWS IoT</span>
-                        <a href="#" class="project-link">Details &rarr;</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="project-card" data-category="food">
-                <div class="project-media">
-                    <div class="project-image" style="background: linear-gradient(135deg, #660000, #330000);">
-                        <div class="image-overlay">
-                            <div class="industry-icon">🥤</div>
-                            <div class="project-duration">15K bottles/hr</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-content">
-                    <div class="project-meta">
-                        <span class="project-category">Food & Bev</span>
-                        <span class="project-client">BevCorp</span>
-                    </div>
-                    <h3 class="project-title">Bottling Line Automation</h3>
-                    <p class="project-description">High-speed bottling with precise control and vision quality assurance.</p>
-                    
-                    <div class="project-highlights">
-                        <div class="highlight"><span class="highlight-icon">✅</span> 20% throughput ↑</div>
-                        <div class="highlight"><span class="highlight-icon">✅</span> 99.5% Quality</div>
-                    </div>
-                    
-                    <div class="project-footer">
-                        <span class="tech-badge">Mitsubishi</span>
-                        <a href="#" class="project-link">Details &rarr;</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+<section class="page-hero">
+    <div class="page-hero-overlay"></div>
+    <div class="hero-content">
+        <div class="hero-badge">PORTFOLIO OVERVIEW</div>
+        <h1>Engineering Projects</h1>
+        <p class="hero-subtitle">
+            Explore our complete collection of embedded systems and Raspberry Pi projects with real-world applications.
+        </p>
         
-        <div class="projects-footer" style="text-align:center; margin-top:60px;">
-            <a href="contact.php" class="btn btn-primary btn-large">
-                Start Your Project ➜
-            </a>
-        </div>
-    </div>
-</section>
-
-<section class="section stats-showcase">
-    <div class="container">
-        <div class="stats-grid">
-            <div class="stat-card-large">
-                <div class="stat-icon">📈</div>
-                <div class="stat-content">
-                    <div class="stat-number">35%</div>
-                    <div class="stat-label">Efficiency Gain</div>
-                    <div class="stat-trend">↑ Average Result</div>
-                </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat-number">17</div>
+                <div class="hero-stat-label">Embedded</div>
             </div>
-            <div class="stat-card-large">
-                <div class="stat-icon">⏱️</div>
-                <div class="stat-content">
-                    <div class="stat-number">99.8%</div>
-                    <div class="stat-label">System Uptime</div>
-                    <div class="stat-trend">★ Reliability</div>
-                </div>
+            <div class="hero-stat">
+                <div class="hero-stat-number">10</div>
+                <div class="hero-stat-label">Raspberry Pi</div>
             </div>
-            <div class="stat-card-large">
-                <div class="stat-icon">🎯</div>
-                <div class="stat-content">
-                    <div class="stat-number">50%</div>
-                    <div class="stat-label">Defect Reduction</div>
-                    <div class="stat-trend">↓ Quality Control</div>
-                </div>
-            </div>
-            <div class="stat-card-large">
-                <div class="stat-icon">💯</div>
-                <div class="stat-content">
-                    <div class="stat-number">100%</div>
-                    <div class="stat-label">Satisfaction</div>
-                    <div class="stat-trend">♥ Client Retention</div>
-                </div>
+            <div class="hero-stat">
+                <div class="hero-stat-number">100%</div>
+                <div class="hero-stat-label">Functional</div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="section industries-section">
+<section class="category-nav">
     <div class="container">
-        <div class="section-header" style="text-align:center; margin-bottom:50px;">
-            <div class="section-label" style="color:#ff3333; font-weight:700;">Our Expertise</div>
-            <h2 class="section-title" style="font-size:2.5rem; color:white;">Industries We <span class="text-accent">Serve</span></h2>
+        <div class="category-tabs">
+            <button class="category-tab active" onclick="filterProjects('all', this)">
+                <span>📁</span> All Projects
+            </button>
+            <button class="category-tab" onclick="filterProjects('embedded', this)">
+                <span>🔌</span> Embedded Systems
+            </button>
+            <button class="category-tab" onclick="filterProjects('raspberry', this)">
+                <span>🍓</span> Raspberry Pi
+            </button>
+            <button class="category-tab" onclick="filterProjects('additional', this)">
+                <span>✨</span> Additional Projects
+            </button>
         </div>
+    </div>
+</section>
+
+<section class="projects-container">
+    <div class="container">
         
-        <div class="industries-grid">
-            <div class="industry-card">
-                <div class="industry-icon">🏭</div>
-                <div class="industry-content">
-                    <h3>Manufacturing</h3>
-                    <p>Assembly lines, robotics, quality control.</p>
-                    <div class="project-count">45 projects</div>
-                </div>
+        <div id="embedded-section" class="project-group">
+            <div class="category-header active">
+                <h2 class="category-title">Embedded Systems</h2>
+                <p class="category-desc">Microcontroller-based solutions for industrial and consumer applications</p>
             </div>
-            <div class="industry-card">
-                <div class="industry-icon">⚡</div>
-                <div class="industry-content">
-                    <h3>Energy</h3>
-                    <p>Power distribution, renewable energy.</p>
-                    <div class="project-count">28 projects</div>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Tracking</span>
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGlSF9DnpS05kKA6MIp3UJxjQ6J2R8zmOXXQ&s" alt="GPS">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Vehicle Tracking GPS–GSM</h3>
+                        <p class="project-desc">Real-time vehicle location tracking sent via SMS using Arduino, GPS, and GSM modules.</p>
+                        <div class="project-tech"><span class="tech-pill">GPS</span><span class="tech-pill">GSM</span><span class="tech-pill">Arduino</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
                 </div>
-            </div>
-            <div class="industry-card">
-                <div class="industry-icon">🥤</div>
-                <div class="industry-content">
-                    <h3>Food & Bev</h3>
-                    <p>Processing, packaging, sanitation.</p>
-                    <div class="project-count">32 projects</div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Automation</span>
+                        <img src="https://telemecaniquesensors.com/sites/default/files/generics/9006BR1602_AutoDoors_HS.jpg" alt="Train">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Automatic Train Doors</h3>
+                        <p class="project-desc">Automated door opening mechanism based on station arrival signals and safety sensors.</p>
+                        <div class="project-tech"><span class="tech-pill">IR Sensor</span><span class="tech-pill">Motor</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
                 </div>
-            </div>
-            <div class="industry-card">
-                <div class="industry-icon">🚗</div>
-                <div class="industry-content">
-                    <h3>Automotive</h3>
-                    <p>Assembly automation, supply chain.</p>
-                    <div class="project-count">39 projects</div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Safety</span>
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIK5RQ2XDgC8G5HEpu3TSENa0IwM1axnuUOA&s" alt="Beacon">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Beacon Flasher System</h3>
+                        <p class="project-desc">Microcontroller-controlled warning lights with variable patterns for emergency vehicles.</p>
+                        <div class="project-tech"><span class="tech-pill">PIC16F</span><span class="tech-pill">LEDs</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Security</span>
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_4qlqYqMHu-nN0LRCH1hiloNfnA5hEmYXCw&s" alt="Breaker">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Password Circuit Breaker</h3>
+                        <p class="project-desc">Digital keypad security system that only allows power flow upon correct password entry.</p>
+                        <div class="project-tech"><span class="tech-pill">Keypad</span><span class="tech-pill">Relay</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Automotive</span>
+                        <img src="https://pictures.dealer.com/s/smythevolvovcna/1239/6359b64ef1cb7a160609c7870bee9109x.jpg" alt="Collision">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Collision Avoidance</h3>
+                        <p class="project-desc">Rear-end collision prevention using ultrasonic sensors and CAN bus communication.</p>
+                        <div class="project-tech"><span class="tech-pill">CAN</span><span class="tech-pill">Ultrasonic</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Biometric</span>
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLf2oiMRmJ2MF6KnAlq5DQP0fCSs1xoH8_JQ&s" alt="Fingerprint">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">PC Fingerprint Login</h3>
+                        <p class="project-desc">Hardware-based authentication module for secure PC access using fingerprint scanning.</p>
+                        <div class="project-tech"><span class="tech-pill">Fingerprint</span><span class="tech-pill">USB</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Agriculture</span>
+                        <img src="https://dasenergie.com/wp-content/uploads/2024/07/automatic-solar-powered-irrigation-system.jpg" alt="Solar">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Solar Irrigation System</h3>
+                        <p class="project-desc">Energy-efficient automated watering system powered by solar panels.</p>
+                        <div class="project-tech"><span class="tech-pill">Solar</span><span class="tech-pill">Moisture</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Automotive</span>
+                        <img src="https://www.researchgate.net/publication/328920450/figure/fig1/AS:692681546141697@1542159558581/Advanced-driver-assistance-systems-ADAS-for-active-passive-safety-comfort-functionality.ppm" alt="Vehicle Control">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Vehicle Control System</h3>
+                        <p class="project-desc">Manages vehicle subsystems electronically with CAN bus communication.</p>
+                        <div class="project-tech"><span class="tech-pill">CAN Bus</span><span class="tech-pill">ECU</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Automotive</span>
+                        <img src="https://www.suzukirndindia.com/assets/styles/blog_details/s3/2025-04/adaptive-cruise-control.jpeg.webp?itok=TKBsH9Cj" alt="Cruise Control">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">RFID Cruise Control</h3>
+                        <p class="project-desc">Controls speed with parental lock features using RFID authentication.</p>
+                        <div class="project-tech"><span class="tech-pill">RFID</span><span class="tech-pill">CAN</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Agriculture</span>
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvdMj0IoKchnIzWSJyUIBy4dk3qwHhU577Dg&s" alt="Greenhouse">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Greenhouse Monitoring</h3>
+                        <p class="project-desc">Monitors and controls greenhouse conditions remotely via sensors.</p>
+                        <div class="project-tech"><span class="tech-pill">WiFi</span><span class="tech-pill">Sensors</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Smart Home</span>
+                        <img src="https://invidyo.com/blog/wp-content/uploads/2022/10/colic-new.jpg" alt="Baby Monitor">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Baby Cry Detector</h3>
+                        <p class="project-desc">Detects baby crying and alerts caregivers via Bluetooth notification.</p>
+                        <div class="project-tech"><span class="tech-pill">Audio Sensor</span><span class="tech-pill">Bluetooth</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Consumer</span>
+                        <img src="https://media.sciencephoto.com/f0/42/76/08/f0427608-800px-wm.jpg" alt="Remote">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">TV Remote Controller</h3>
+                        <p class="project-desc">Controls TV functions using PIC microcontroller and IR signals.</p>
+                        <div class="project-tech"><span class="tech-pill">PIC</span><span class="tech-pill">IR</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Sports</span>
+                        <img src="https://repository-images.githubusercontent.com/770019172/2166411b-151b-4a49-bdcd-d252ab3c9023" alt="Speed">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Human Speed Detection</h3>
+                        <p class="project-desc">Measures speed of human movement using precise IR sensors.</p>
+                        <div class="project-tech"><span class="tech-pill">IR</span><span class="tech-pill">Timer</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Agriculture</span>
+                        <img src="https://i.ytimg.com/vi/0l414YpfQbM/maxresdefault.jpg" alt="Crop Protection">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Crop Protection System</h3>
+                        <p class="project-desc">Protects crops from animals using PIR sensors and alarm systems.</p>
+                        <div class="project-tech"><span class="tech-pill">PIR</span><span class="tech-pill">Alarm</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Security</span>
+                        <img src="https://www.bestonlinetrafficschool.co/wp-content/uploads/2023/04/55-Best-Anti-Theft-Car-Devices-04.png" alt="Theft">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Vehicle Theft Alert</h3>
+                        <p class="project-desc">Detects theft via vibration sensors and sends GSM alerts.</p>
+                        <div class="project-tech"><span class="tech-pill">Vibration</span><span class="tech-pill">GSM</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">IoT</span>
+                        <img src="https://www.siilc.edu.in/wp-content/uploads/2025/07/modern-smart-farming-agriculture-technology-farm-1.jpg" alt="Smart Farm">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Smart Agriculture IoT</h3>
+                        <p class="project-desc">Full farming automation with multiple environmental sensors.</p>
+                        <div class="project-tech"><span class="tech-pill">IoT</span><span class="tech-pill">Cloud</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Industrial</span>
+                        <img src="https://incantodynamics.com/wp-content/uploads/2024/03/What_are_Industrial_Control_Systems__ICS_.jpeg" alt="Industry">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Industrial Controller</h3>
+                        <p class="project-desc">PLC-based industrial process control and automation system.</p>
+                        <div class="project-tech"><span class="tech-pill">PLC</span><span class="tech-pill">SCADA</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
 
-<section class="section process-section">
-    <div class="container">
-        <div class="section-header" style="text-align:center; margin-bottom:60px;">
-            <div class="section-label" style="color:#ff3333;">Our Process</div>
-            <h2 class="section-title" style="font-size:2.5rem; color:white;">How We <span class="text-accent">Deliver</span></h2>
+        <div id="raspberry-section" class="project-group" style="margin-top: 60px;">
+            <div class="category-header active">
+                <h2 class="category-title">Raspberry Pi Projects</h2>
+                <p class="category-desc">Advanced computing and IoT solutions powered by Raspberry Pi</p>
+            </div>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Environmental</span>
+                        <img src="https://www.libelium.com/wp-content/uploads/2018/06/diagrama_argentina_rack21.jpg" alt="Flood">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">IoT Flood Monitoring</h3>
+                        <p class="project-desc">Internet-connected water level monitoring system with dashboard alerts.</p>
+                        <div class="project-tech"><span class="tech-pill">IoT</span><span class="tech-pill">Python</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Vision</span>
+                        <img src="https://pub.mdpi-res.com/engproc/engproc-32-00012/article_deploy/html/images/engproc-32-00012-g001.png" alt="Color">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">IoT Color Monitor</h3>
+                        <p class="project-desc">Industrial color sorting and identification using computer vision.</p>
+                        <div class="project-tech"><span class="tech-pill">OpenCV</span><span class="tech-pill">Camera</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Robotics</span>
+                        <img src="https://miro.medium.com/v2/resize:fit:1400/1*Y3pONHyWJF9Xbl_NzuqBTA.png" alt="Tracker">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Object Tracker</h3>
+                        <p class="project-desc">Automated camera turret that follows moving objects via image processing.</p>
+                        <div class="project-tech"><span class="tech-pill">Servos</span><span class="tech-pill">CV</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Smart Home</span>
+                        <img src="https://assets.skyfilabs.com/images/blog/gsm_based_home_automation_system_with_iot.webp" alt="Home">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">IoT Home Automation</h3>
+                        <p class="project-desc">Centralized control hub for home appliances with remote web access.</p>
+                        <div class="project-tech"><span class="tech-pill">NodeJS</span><span class="tech-pill">Relays</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Security</span>
+                        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiD7y8V_clxWfBWOLp8NIhN7_s1wHFePbdJmwuSOgwzGR_f4ft_na9QPwfjgaufchGjAExgO4ghNjP2ylPswMxaQpuTOP20UY62qgI6-kF8dFaTExum3P6GOU0fDBox4J_FD268UGcYpYyPSSaSafQGqW-Zqikav2F5N8drYKw1uy9ZuRQKNLf3GivFr65p/s1600/Android_Theft%20Protection_Blog%20Header_2096x1182_v3.2%20%281%29.png" alt="Security">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Theft Detection System</h3>
+                        <p class="project-desc">Detects intrusion using PIR sensors and captures images for evidence.</p>
+                        <div class="project-tech"><span class="tech-pill">Camera</span><span class="tech-pill">Email</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Robotics</span>
+                        <img src="https://robodk.com/blog/wp-content/uploads/2023/07/iStock-867944730.jpg" alt="Arm">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Robotic Arm Control</h3>
+                        <p class="project-desc">Precise control of robotic arm movements using Python scripts.</p>
+                        <div class="project-tech"><span class="tech-pill">GPIO</span><span class="tech-pill">Servos</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Transport</span>
+                        <img src="https://www.shutterstock.com/image-photo/billericay-uk-march-4-2024-260nw-2495378967.jpg" alt="Ticket">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Touch Railway Ticketing</h3>
+                        <p class="project-desc">Modern ticket booking system with touchscreen interface and database.</p>
+                        <div class="project-tech"><span class="tech-pill">Touch</span><span class="tech-pill">SQL</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Energy</span>
+                        <img src="https://www.tuvie.com/wp-content/uploads/solar-notebook1.jpg" alt="Solar PC">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Solar Powered Computer</h3>
+                        <p class="project-desc">Self-sustaining computer system running entirely on solar energy.</p>
+                        <div class="project-tech"><span class="tech-pill">Solar</span><span class="tech-pill">Power</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Storage</span>
+                        <img src="https://data-carts.com/wp-content/uploads/2022/04/Valuable-Advantages-of-Powered-Medical-Carts.jpg" alt="Data">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Portable Data Cart</h3>
+                        <p class="project-desc">Mobile data storage and transfer unit with wireless capabilities.</p>
+                        <div class="project-tech"><span class="tech-pill">WiFi</span><span class="tech-pill">NAS</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Tools</span>
+                        <img src="https://knowhow.distrelec.com/wp-content/uploads/2021/06/GettyImages-185760490.jpg?w=1920&h=1024&crop=1" alt="Scope">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Digital Oscilloscope</h3>
+                        <p class="project-desc">Signal analysis and visualization tool built on Raspberry Pi.</p>
+                        <div class="project-tech"><span class="tech-pill">ADC</span><span class="tech-pill">GUI</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="process-timeline">
-            <div class="process-step">
-                <div class="step-number">01</div>
-                <div class="step-content">
-                    <h3>Discovery & Analysis</h3>
-                    <p>Comprehensive assessment of requirements and goals.</p>
-                    <ul class="step-features">
-                        <li>Needs analysis</li>
-                        <li>Feasibility study</li>
-                    </ul>
-                </div>
-                <div class="step-icon" style="color:white; font-size:2rem; margin-left:auto;">🔍</div>
-            </div>
-            
-            <div class="process-step">
-                <div class="step-number">02</div>
-                <div class="step-content">
-                    <h3>Design & Planning</h3>
-                    <p>System architecture and component selection.</p>
-                    <ul class="step-features">
-                        <li>System architecture</li>
-                        <li>Timeline planning</li>
-                    </ul>
-                </div>
-                <div class="step-icon" style="color:white; font-size:2rem; margin-left:auto;">📐</div>
-            </div>
-            
-            <div class="process-step">
-                <div class="step-number">03</div>
-                <div class="step-content">
-                    <h3>Implementation</h3>
-                    <p>Installation, software development, and integration.</p>
-                    <ul class="step-features">
-                        <li>Hardware setup</li>
-                        <li>Software dev</li>
-                    </ul>
-                </div>
-                <div class="step-icon" style="color:white; font-size:2rem; margin-left:auto;">⚙️</div>
-            </div>
-            
-            <div class="process-step">
-                <div class="step-number">04</div>
-                <div class="step-content">
-                    <h3>Support</h3>
-                    <p>Testing, training, and ongoing maintenance.</p>
-                    <ul class="step-features">
-                        <li>System testing</li>
-                        <li>24/7 Support</li>
-                    </ul>
-                </div>
-                <div class="step-icon" style="color:white; font-size:2rem; margin-left:auto;">🛠️</div>
-            </div>
-        </div>
-    </div>
-</section>
 
-<section class="section cta-section project-cta">
-    <div class="container">
-        <div class="cta-content">
-            <div class="cta-badge" style="background:rgba(255,255,255,0.1); display:inline-block; padding:5px 15px; border-radius:50px; margin-bottom:15px;">
-                <span>Ready to Transform?</span>
+        <div id="additional-section" class="project-group" style="margin-top: 60px;">
+            <div class="category-header active">
+                <h2 class="category-title">Additional Projects</h2>
+                <p class="category-desc">Innovative solutions across various industrial domains</p>
             </div>
-            <h2>Start Your <span class="text-accent">Automation</span> Journey</h2>
-            <div class="cta-buttons" style="margin-top:30px; display:flex; justify-content:center; gap:20px;">
-                <a href="contact.php" class="btn btn-white">Discuss Project</a>
-                <a href="services.php" class="btn btn-secondary">View Services</a>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">IoT</span>
+                        <img src="https://smiledrive.in/cdn/shop/products/3_3c3a03de-0c06-49b9-8218-b1e7a1f58ed9.jpg?v=1642159888&width=1445" alt="Door">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Email/SMS Door Notifier</h3>
+                        <p class="project-desc">Security system that logs door activity and sends instant alerts.</p>
+                        <div class="project-tech"><span class="tech-pill">Sensor</span><span class="tech-pill">API</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Automotive</span>
+                        <img src="https://dn1qkewum0hvl.cloudfront.net/blog/wp-content/uploads/2016/10/Solo-PCMS-automotive-computer-modern-dashboard-concept-1024x682.jpg" alt="Car PC">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Car Computer</h3>
+                        <p class="project-desc">On-board diagnostics display showing real-time vehicle metrics.</p>
+                        <div class="project-tech"><span class="tech-pill">OBD-II</span><span class="tech-pill">Display</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image-wrap">
+                        <span class="project-badge">Industrial</span>
+                        <img src="https://incantodynamics.com/wp-content/uploads/2024/03/What_are_Industrial_Control_Systems__ICS_.jpeg" alt="Industrial">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Industrial Automation</h3>
+                        <p class="project-desc">PLC and SCADA implementation for factory line control.</p>
+                        <div class="project-tech"><span class="tech-pill">PLC</span><span class="tech-pill">SCADA</span></div>
+                        <div class="project-footer"><a href="#" class="project-link">Details &rarr;</a></div>
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
 </section>
 
 <script>
     function filterProjects(category, btn) {
-        // Update Buttons
-        document.querySelectorAll('.filter-tag').forEach(b => b.classList.remove('active'));
+        // Update tabs
+        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
         btn.classList.add('active');
 
-        // Filter Cards
-        const cards = document.querySelectorAll('.project-card');
-        cards.forEach(card => {
-            const projectCat = card.getAttribute('data-category');
-            if (category === 'all' || projectCat === category) {
-                card.style.display = 'flex';
-                card.style.opacity = '0';
-                setTimeout(() => card.style.opacity = '1', 100);
-            } else {
-                card.style.display = 'none';
-            }
+        // Sections
+        const embedded = document.getElementById('embedded-section');
+        const raspberry = document.getElementById('raspberry-section');
+        const additional = document.getElementById('additional-section');
+
+        // Logic
+        if (category === 'all') {
+            embedded.style.display = 'block';
+            raspberry.style.display = 'block';
+            additional.style.display = 'block';
+        } else if (category === 'embedded') {
+            embedded.style.display = 'block';
+            raspberry.style.display = 'none';
+            additional.style.display = 'none';
+        } else if (category === 'raspberry') {
+            embedded.style.display = 'none';
+            raspberry.style.display = 'block';
+            additional.style.display = 'none';
+        } else if (category === 'additional') {
+            embedded.style.display = 'none';
+            raspberry.style.display = 'none';
+            additional.style.display = 'block';
+        }
+
+        // Animation reset
+        document.querySelectorAll('.project-card').forEach(card => {
+            card.classList.remove('fade-in');
+            void card.offsetWidth; // trigger reflow
+            card.classList.add('fade-in');
         });
     }
 </script>
