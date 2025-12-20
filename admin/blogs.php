@@ -40,39 +40,144 @@ if (isset($_POST['add_blog'])) {
 <head>
     <meta charset="UTF-8">
     <title>Manage Blogs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-red: #ff3333; --bg-black: #050505; --card-bg: #111; --border: #2a2a2a; color:white;}
-        body { background: var(--bg-black); font-family: 'Inter', sans-serif; padding: 20px; overflow-x: hidden; }
-        .container { max-width: 98%; margin: 0 auto; } 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-        .back-btn { color: #888; text-decoration: none; font-weight: 600; font-size: 1.1rem;} .back-btn:hover { color: white; }
-        .admin-card { background: var(--card-bg); border: 1px solid var(--border); padding: 20px; border-radius: 12px; margin-bottom: 40px; }
+        /* --- VARIABLES --- */
+        :root { 
+            --primary: #ff3333; 
+            --bg-body: #050505; 
+            --bg-card: #111111; 
+            --bg-input: #000000;
+            --border-color: #2a2a2a; 
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --table-hover: #161616;
+        }
+        
+        /* Light Mode Override */
+        body.light-mode {
+            --bg-body: #f4f6f9;
+            --bg-card: #ffffff;
+            --bg-input: #f8f9fa;
+            --border-color: #e0e0e0;
+            --text-main: #111111;
+            --text-muted: #666666;
+            --table-hover: #f1f1f1;
+        }
+        
+        body { 
+            background: var(--bg-body); 
+            font-family: 'Inter', sans-serif; 
+            padding: 40px 20px; 
+            margin: 0; 
+            color: var(--text-main);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; position: relative; }
+        
+        /* Toggle Button */
+        .theme-toggle {
+            position: absolute; top: 0; right: 0;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            color: var(--text-main); width: 40px; height: 40px;
+            border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; transition: 0.3s; z-index: 100;
+        }
+        .theme-toggle:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Header */
+        .header { 
+            display: flex; flex-direction: column; gap: 15px; 
+            margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; 
+        }
+        .back-btn { 
+            color: var(--text-muted); text-decoration: none; font-weight: 600; 
+            display: flex; align-items: center; gap: 8px; transition: 0.3s; width: fit-content;
+        }
+        .back-btn:hover { color: var(--primary); }
+
+        /* Card */
+        .admin-card { 
+            background: var(--bg-card); border: 1px solid var(--border-color); 
+            padding: 30px; border-radius: 12px; margin-bottom: 40px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        
         .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .form-group { margin-bottom: 0; }
-        label { display: block; margin-bottom: 8px; color: #888; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
-        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 6px; box-sizing: border-box; }
-        .btn-submit { width: 100%; background: var(--primary-red); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; margin-top: 20px; font-size: 1rem; }
-        .alert { padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; }
-        .alert-success { background: rgba(0,255,0,0.1); border: 1px solid green; color: green; }
-        .tox-tinymce { border: 1px solid #333 !important; border-radius: 6px !important; }
+        .form-group { margin-bottom: 20px; }
+        
+        label { 
+            display: block; margin-bottom: 8px; color: var(--text-muted); 
+            font-size: 0.85rem; font-weight: 700; text-transform: uppercase; 
+        }
+        
+        input { 
+            width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); 
+            color: var(--text-main); padding: 12px; border-radius: 6px; 
+            box-sizing: border-box; transition: 0.3s; font-family: inherit;
+        }
+        input:focus { 
+            border-color: var(--primary); outline: none; 
+            box-shadow: 0 0 0 3px rgba(255, 51, 51, 0.1);
+        }
+        
+        /* Submit Button */
+        .btn-submit { 
+            width: 100%; background: var(--primary); color: white; border: none; 
+            padding: 14px; border-radius: 6px; font-weight: 700; cursor: pointer; 
+            text-transform: uppercase; margin-top: 10px; font-size: 1rem; transition: 0.3s;
+        }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        /* Alerts */
+        .alert { padding: 15px; margin-bottom: 20px; border-radius: 6px; text-align: center; font-weight: 600; }
+        .alert-success { background: rgba(40, 167, 69, 0.1); border: 1px solid #28a745; color: #28a745; }
+        .alert-error { background: rgba(220, 53, 69, 0.1); border: 1px solid #dc3545; color: #dc3545; }
+
+        /* TinyMCE Overrides for Theme consistency */
+        .tox-tinymce { border: 1px solid var(--border-color) !important; border-radius: 6px !important; }
 
         /* Table */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; }
-        th { color: #888; text-transform: uppercase; }
-        tr:hover { background: #161616; }
-        .action-btn { padding: 5px 10px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; margin-right: 5px; }
-        .edit-btn { background: #333; color: white; }
-        .delete-btn { background: rgba(255, 51, 51, 0.2); color: #ff3333; }
+        .table-wrapper { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { color: var(--text-muted); text-transform: uppercase; font-size: 0.85rem; font-weight: 700; }
+        tr:hover { background: var(--table-hover); }
+        
+        .action-btn { 
+            padding: 6px 12px; border-radius: 4px; text-decoration: none; 
+            font-size: 0.85rem; margin-right: 5px; font-weight: 600; transition: 0.3s;
+        }
+        .edit-btn { background: var(--border-color); color: var(--text-main); }
+        .edit-btn:hover { background: var(--text-muted); color: white; }
+        .delete-btn { background: rgba(255, 51, 51, 0.1); color: var(--primary); }
+        .delete-btn:hover { background: var(--primary); color: white; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            body { padding: 20px 15px; }
+            .theme-toggle { top: -50px; } /* Adjust position relative to container flow if needed */
+            .header { padding-top: 40px; }
+            .meta-grid { grid-template-columns: 1fr; }
+            .admin-card { padding: 20px; }
+            th, td { padding: 10px; font-size: 0.9rem; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        
+        <button class="theme-toggle" onclick="toggleTheme()" title="Switch Theme">
+            <span id="theme-icon">☀</span>
+        </button>
+
         <div class="header">
             <a href="dashboard.php" class="back-btn">&larr; Back to Dashboard</a>
-            <h2 style="margin:0;">Intelligence Hub</h2>
+            <h2 style="margin:0; font-size: 1.8rem; letter-spacing: -0.5px;">Intelligence Hub</h2>
         </div>
 
         <?php if($msg): ?><div class="alert <?php echo ($msg_type=='success')?'alert-success':'alert-error'; ?>"><?php echo $msg; ?></div><?php endif; ?>
@@ -86,7 +191,7 @@ if (isset($_POST['add_blog'])) {
                     </div>
                     <div class="form-group">
                         <label>Cover Image</label>
-                        <input type="file" name="blog_image" required accept="image/*">
+                        <input type="file" name="blog_image" required accept="image/*" style="padding: 10px; background: var(--bg-input);">
                     </div>
                 </div>
                 <div class="form-group">
@@ -96,40 +201,82 @@ if (isset($_POST['add_blog'])) {
             </form>
         </div>
 
-        <h3 style="color:white; padding-bottom:10px; border-bottom:1px solid #333;">Recent Articles</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th width="60">Image</th>
-                    <th>Title</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $result = $conn->query("SELECT * FROM blogs ORDER BY created_at DESC");
-                while($row = $result->fetch_assoc()):
-                ?>
-                <tr>
-                    <td><img src="../uploads/<?php echo $row['image']; ?>" width="50" style="border-radius:4px;"></td>
-                    <td><?php echo htmlspecialchars($row['title']); ?></td>
-                    <td><?php echo date('M d, Y', strtotime($row['created_at'])); ?></td>
-                    <td>
-                        <a href="edit_blog.php?id=<?php echo $row['id']; ?>" class="action-btn edit-btn">Edit</a>
-                        <a href="?delete=<?php echo $row['id']; ?>" class="action-btn delete-btn" onclick="return confirm('Delete this article?');">Delete</a>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
+        <h3 style="color:var(--text-main); padding-bottom:10px; border-bottom:1px solid var(--border-color); margin-top: 40px;">Recent Articles</h3>
+        
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="60">Image</th>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th width="150">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $result = $conn->query("SELECT * FROM blogs ORDER BY created_at DESC");
+                    if ($result && $result->num_rows > 0):
+                        while($row = $result->fetch_assoc()):
+                    ?>
+                    <tr>
+                        <td>
+                            <?php if (!empty($row['image'])): ?>
+                                <img src="../uploads/<?php echo $row['image']; ?>" width="50" height="50" style="border-radius:4px; object-fit: cover;">
+                            <?php else: ?>
+                                <span style="color:var(--text-muted); font-size:0.8rem;">No Img</span>
+                            <?php endif; ?>
+                        </td>
+                        <td style="font-weight: 600; color: var(--text-main);"><?= htmlspecialchars($row['title']); ?></td>
+                        <td style="color: var(--text-muted);"><?php echo date('M d, Y', strtotime($row['created_at'])); ?></td>
+                        <td>
+                            <a href="edit_blog.php?id=<?php echo $row['id']; ?>" class="action-btn edit-btn">Edit</a>
+                            <a href="?delete=<?php echo $row['id']; ?>" class="action-btn delete-btn" onclick="return confirm('Delete this article?');">Delete</a>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                    <?php else: ?>
+                    <tr>
+                        <td colspan="4" style="text-align:center; padding:30px; color:var(--text-muted);">No articles published yet.</td>
+                    </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
+        // --- THEME LOGIC ---
+        const currentTheme = localStorage.getItem('theme');
+        const icon = document.getElementById('theme-icon');
+        const isLightMode = currentTheme === 'light';
+        
+        if (isLightMode) {
+            document.body.classList.add('light-mode');
+            icon.innerText = '🌙';
+        } else {
+            icon.innerText = '☀';
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            icon.innerText = isLight ? '🌙' : '☀';
+            
+            // Reload page to re-initialize TinyMCE with correct skin (optional, but cleaner for editor)
+            // location.reload(); 
+        }
+
+        // --- TINYMCE INIT ---
+        // Dynamically choose skin based on current theme on load
+        const skin = isLightMode ? "oxide" : "oxide-dark";
+        const contentCss = isLightMode ? "default" : "dark";
+
         tinymce.init({
             selector: '#blog_editor',
-            skin: "oxide-dark",
-            content_css: "dark",
+            skin: skin,
+            content_css: contentCss,
             height: "500",
             plugins: 'image link lists media table code help wordcount',
             toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | image | code',
