@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -20,19 +19,44 @@
 
     <style>
         :root {
+            /* --- CORE PALETTE (Variables used across both themes) --- */
             --primary-red: #ff3333;
             --dark-red: #cc0000;
-            --glow-red: rgba(255, 51, 51, 0.15);
-            --text-white: #ffffff;
-            --text-gray: #a0a0a0;
-            --text-light: #e0e0e0;
-            --bg-black: #000000;
-            --bg-dark: #0a0a0a;
-            --bg-darker: #050505;
+            
+            /* --- DARK THEME (DEFAULT) --- */
+            --bg-body: #000000;
+            --bg-surface: #0a0a0a;
+            --bg-surface-2: #111111; /* Slightly lighter for cards */
             --bg-gradient: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%);
-            --bg-gradient-alt: linear-gradient(180deg, #000000 0%, #111111 100%);
-            --border-color: rgba(255, 255, 255, 0.05);
+            
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --text-light: #e0e0e0;
+            
+            --border-color: rgba(255, 255, 255, 0.1);
             --card-bg: rgba(10, 10, 10, 0.8);
+            
+            --nav-bg: rgba(0, 0, 0, 0.95);
+            --shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- LIGHT THEME OVERRIDES --- */
+        body.light-mode {
+            /* Aliceblue background, Black text, Red Accents */
+            --bg-body: #f0f8ff; /* Aliceblue */
+            --bg-surface: #ffffff;
+            --bg-surface-2: #e6f0fa;
+            --bg-gradient: linear-gradient(135deg, #f0f8ff 0%, #ffffff 100%);
+            
+            --text-main: #111111;
+            --text-muted: #555555;
+            --text-light: #333333;
+            
+            --border-color: rgba(0, 0, 0, 0.1);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            
+            --nav-bg: rgba(255, 255, 255, 0.95);
+            --shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
         }
 
         /* ===== GLOBAL STYLES ===== */
@@ -42,380 +66,128 @@
             padding: 0;
         }
 
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
         body {
             background: var(--bg-gradient) !important;
-            color: var(--text-white) !important;
+            color: var(--text-main) !important;
             font-family: 'Inter', sans-serif !important;
             margin: 0;
             padding-top: 80px;
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
+        /* Background grid/dots effect */
         body::before {
             content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: 
                 radial-gradient(circle at 20% 50%, rgba(255, 51, 51, 0.03) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(255, 51, 51, 0.02) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
+            pointer-events: none; z-index: -1;
         }
 
         /* ===== NAVBAR STYLES ===== */
         .navbar {
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.98) 0%, rgba(5, 5, 5, 0.98) 100%) !important;
+            background: var(--nav-bg) !important;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-color) !important;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            height: 80px;
-            display: flex;
-            align-items: center;
+            box-shadow: var(--shadow);
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; height: 80px;
+            display: flex; align-items: center;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .navbar.scrolled {
-            height: 70px;
-            background: rgba(0, 0, 0, 0.95) !important;
-            border-bottom: 1px solid rgba(255, 51, 51, 0.1) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        }
-
         .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 40px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            max-width: 1400px; margin: 0 auto; padding: 0 40px; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
         }
 
-        /* LOGO STYLING */
-         /* LOGO STYLING */
-        .brand {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-        }
-        
-        .header-logo {
-            height: 70px; /* Much bigger logo */
-            width: auto;
-            object-fit: contain;
-            transition: transform 0.3s ease;
-        }
-        
-        .brand:hover .header-logo {
-            transform: scale(1.05);
-        }
+        /* LOGO */
+        .brand { display: flex; align-items: center; text-decoration: none; }
+        .header-logo { height: 60px; width: auto; object-fit: contain; transition: transform 0.3s ease; }
+        .brand:hover .header-logo { transform: scale(1.05); }
 
-        /* MENU STYLING */
+        /* MENU */
         .nav-menu {
-            display: flex;
-            gap: 2.5rem;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            align-items: center;
+            display: flex; gap: 2rem; list-style: none; margin: 0; padding: 0; align-items: center;
         }
 
         .nav-link { 
-            color: var(--text-gray) !important; 
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.3s ease; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            padding: 0.5rem 0;
-            display: inline-block;
+            color: var(--text-muted) !important; 
+            text-decoration: none; font-weight: 600; font-size: 0.9rem;
+            transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;
+            position: relative; padding: 0.5rem 0;
         }
         
         .nav-link::before {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(to right, var(--primary-red), #ff6666);
-            transition: width 0.3s ease;
-            border-radius: 2px;
+            content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px;
+            background: var(--primary-red); transition: width 0.3s ease;
         }
         
-        .nav-link:hover,
-        .nav-link.active { 
-            color: var(--text-white) !important; 
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        .nav-link:hover, .nav-link.active { 
+            color: var(--text-main) !important; 
         }
-        
-        .nav-link:hover::before,
-        .nav-link.active::before { 
-            width: 100%; 
-        }
+        .nav-link:hover::before, .nav-link.active::before { width: 100%; }
 
-        /* Login Button Special Styling */
+        /* THEME TOGGLE BTN */
+        .theme-toggle-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            margin-left: 1rem;
+            transition: 0.3s;
+        }
+        .theme-toggle-btn:hover {
+            background: var(--primary-red);
+            color: white;
+            border-color: var(--primary-red);
+        }
+        .theme-toggle-btn svg { width: 20px; height: 20px; fill: currentColor; }
+        
+        /* Sun/Moon Icons logic */
+        .icon-sun { display: none; }
+        .icon-moon { display: block; }
+        
+        body.light-mode .icon-sun { display: block; }
+        body.light-mode .icon-moon { display: none; }
+
+        /* LOGIN BTN */
         .nav-link.login-btn {
             background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
-            color: var(--text-white) !important;
-            padding: 0.7rem 1.8rem;
-            border-radius: 4px;
-            margin-left: 1.5rem;
-            transition: all 0.3s ease;
-            border: none;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: #fff !important; padding: 0.6rem 1.5rem; border-radius: 4px;
+            margin-left: 0.5rem;
         }
-        
-        .nav-link.login-btn::before {
-            display: none;
-        }
-        
-        .nav-link.login-btn:hover {
-            background: linear-gradient(135deg, var(--dark-red), #b30000);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 51, 51, 0.4);
-        }
+        .nav-link.login-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(255, 51, 51, 0.4); }
+        .nav-link.login-btn::before { display: none; }
 
-        /* MOBILE TOGGLE BUTTON */
-        .nav-toggle {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 10px;
-            z-index: 1001;
-            position: relative;
-        }
-        
-        .nav-toggle span {
-            display: block;
-            width: 24px;
-            height: 2px;
-            background: var(--text-white);
-            transition: all 0.3s ease;
-            transform-origin: center;
-            border-radius: 2px;
-        }
-        
-        .nav-toggle.active span:nth-child(1) {
-            transform: rotate(45deg) translate(6px, 6px);
-            background: var(--primary-red);
-        }
-        
-        .nav-toggle.active span:nth-child(2) {
-            opacity: 0;
-        }
-        
-        .nav-toggle.active span:nth-child(3) {
-            transform: rotate(-45deg) translate(6px, -6px);
-            background: var(--primary-red);
-        }
+        /* MOBILE TOGGLE */
+        .nav-toggle { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; z-index: 1001; }
+        .nav-toggle span { display: block; width: 24px; height: 2px; background: var(--text-main); transition: 0.3s; }
 
-        /* MOBILE MENU STYLES */
+        /* RESPONSIVE */
         @media (max-width: 1024px) {
+            .nav-menu { gap: 1.5rem; }
+        }
+        @media (max-width: 900px) {
+            .nav-toggle { display: flex; }
             .nav-menu {
-                gap: 2rem;
+                position: fixed; top: 0; right: -100%; width: 300px; height: 100vh;
+                background: var(--bg-surface);
+                flex-direction: column; padding: 100px 40px; border-left: 1px solid var(--border-color);
+                transition: 0.4s; box-shadow: -10px 0 40px rgba(0,0,0,0.2);
             }
-            
-            .nav-container {
-                padding: 0 30px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .nav-toggle {
-                display: flex;
-            }
-            
-            .nav-menu {
-                position: fixed;
-                top: 0;
-                right: -100%;
-                width: 300px;
-                height: 100vh;
-                background: linear-gradient(180deg, rgba(0, 0, 0, 0.98) 0%, rgba(10, 10, 10, 0.98) 100%);
-                backdrop-filter: blur(30px);
-                -webkit-backdrop-filter: blur(30px);
-                flex-direction: column;
-                padding: 120px 40px 40px;
-                gap: 0;
-                transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                z-index: 999;
-                border-left: 1px solid var(--border-color);
-                box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
-            }
-            
-            .nav-menu.active {
-                right: 0;
-            }
-            
-            .nav-menu li {
-                width: 100%;
-                margin-bottom: 0;
-                opacity: 0;
-                transform: translateX(20px);
-                animation: slideIn 0.3s ease forwards;
-            }
-            
-            .nav-menu li:nth-child(1) { animation-delay: 0.1s; }
-            .nav-menu li:nth-child(2) { animation-delay: 0.2s; }
-            .nav-menu li:nth-child(3) { animation-delay: 0.3s; }
-            .nav-menu li:nth-child(4) { animation-delay: 0.4s; }
-            .nav-menu li:nth-child(5) { animation-delay: 0.5s; }
-            .nav-menu li:nth-child(6) { animation-delay: 0.6s; }
-            .nav-menu li:nth-child(7) { animation-delay: 0.7s; }
-            .nav-menu li:nth-child(8) { animation-delay: 0.8s; }
-            
-            @keyframes slideIn {
-                to {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-            }
-            
-            .nav-link {
-                display: block;
-                padding: 1.2rem 0;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                font-size: 1rem;
-                width: 100%;
-            }
-            
-            .nav-link.login-btn {
-                margin: 1.5rem 0 0 0;
-                text-align: center;
-                width: 100%;
-                padding: 1rem;
-                font-size: 1rem;
-            }
-            
-            .navbar {
-                height: 70px;
-            }
-            
-            body {
-                padding-top: 70px;
-            }
-            
-            .nav-container {
-                padding: 0 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .brand-logo {
-                font-size: 1.5rem;
-            }
-            
-            .nav-menu {
-                width: 100%;
-                padding: 100px 30px 30px;
-            }
-            
-            .nav-container {
-                padding: 0 15px;
-            }
-        }
-
-        /* ===== GLOBAL UTILITIES ===== */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            width: 100%;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 14px 32px;
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            font-weight: 600;
-            line-height: 1;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
-            color: var(--text-white);
-            border: 1px solid transparent;
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--dark-red), #b30000);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 51, 51, 0.3);
-        }
-
-        .section {
-            padding: 100px 0;
-            position: relative;
-        }
-
-        .section-title {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 3rem;
-            font-weight: 800;
-            color: var(--text-white);
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-
-        .section-subtitle {
-            color: var(--text-gray);
-            font-size: 1.125rem;
-            max-width: 700px;
-            margin: 0 auto 3rem;
-            text-align: center;
-            line-height: 1.6;
-        }
-
-        /* ===== SCROLLBAR STYLING ===== */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-darker);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, var(--primary-red), var(--dark-red));
-            border-radius: 5px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, var(--dark-red), #b30000);
+            .nav-menu.active { right: 0; }
+            .nav-link { width: 100%; border-bottom: 1px solid var(--border-color); padding: 15px 0; }
+            .nav-link.login-btn { margin: 20px 0; width: 100%; text-align: center; }
         }
     </style>
 </head>
@@ -434,9 +206,7 @@
         </a>
 
         <ul class="nav-menu" id="navMenu">
-            <?php 
-                $cp = $current_page ?? ''; 
-            ?>
+            <?php $cp = $current_page ?? ''; ?>
             <li><a href="<?php echo $base_path; ?>index.php" class="nav-link <?php echo ($cp == 'home') ? 'active' : ''; ?>">Home</a></li>
             <li><a href="<?php echo $base_path; ?>projects.php" class="nav-link <?php echo ($cp == 'projects') ? 'active' : ''; ?>">Projects</a></li>
             <li><a href="<?php echo $base_path; ?>services.php" class="nav-link <?php echo ($cp == 'services') ? 'active' : ''; ?>">Services</a></li>
@@ -445,12 +215,48 @@
             <li><a href="<?php echo $base_path; ?>business-card.php" class="nav-link <?php echo ($cp == 'business-card') ? 'active' : ''; ?>">Digital Card</a></li>
             <li><a href="<?php echo $base_path; ?>contact.php" class="nav-link <?php echo ($cp == 'contact') ? 'active' : ''; ?>">Contact</a></li>
             <li><a href="<?php echo $base_path; ?>admin/login.php" class="nav-link login-btn">Login</a></li>
+            
+            <li>
+                <button id="themeToggle" class="theme-toggle-btn" aria-label="Toggle Theme">
+                    <svg class="icon-moon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.41-1.41zm1.06-10.96a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41zM7.05 18.36a.996.996 0 0 0 0 1.41.996.996 0 0 0 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0L7.05 18.36z"/></svg>
+                </button>
+            </li>
         </ul>
 
-        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
-            <span></span>
-            <span></span>
-            <span></span>
+        <button class="nav-toggle" id="navToggle">
+            <span></span><span></span><span></span>
         </button>
     </div>
 </nav>
+
+<script>
+    // Theme Toggling Logic
+    const toggleBtn = document.getElementById('themeToggle');
+    const body = document.body;
+    
+    // Check saved preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        body.classList.add('light-mode');
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        body.classList.toggle('light-mode');
+        // Save preference
+        if (body.classList.contains('light-mode')) {
+            localStorage.setItem('theme', 'light');
+        } else {
+            localStorage.setItem('theme', 'dark');
+        }
+    });
+
+    // Mobile Menu Logic
+    const navToggle = document.getElementById('navToggle');
+    const navMenu = document.getElementById('navMenu');
+    
+    navToggle.addEventListener('click', () => {
+        navToggle.classList.toggle('active');
+        navMenu.classList.toggle('active');
+    });
+</script>

@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 $current_page = 'products';
-$page_title = 'Our Products | Industrial Intelligence';
+$page_title = 'Our Products | ' . (defined('SITE_NAME') ? SITE_NAME : 'Industrial Intelligence');
 
 // Config
 require_once 'includes/config.php';
@@ -26,373 +26,279 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
 ?>
 
 <style>
-    /* Product Page Styles matching Homepage */
+    /* --- PAGE SPECIFIC STYLES --- */
+    
+    /* HERO SECTION */
     .products-hero {
-        min-height: 70vh;
+        min-height: 40vh;
         position: relative;
         display: flex;
         align-items: center;
-        overflow: hidden;
-        border-bottom: 1px solid var(--border);
-        padding: 80px 5%;
-        background: linear-gradient(180deg, #000 0%, #111 100%);
-    }
-    
-    .products-hero-content {
-        position: relative;
-        z-index: 10;
-        max-width: 1400px;
-        margin: 0 auto;
-        width: 100%;
+        justify-content: center;
+        padding: 120px 5% 80px;
         text-align: center;
+        background: var(--bg-body);
+        border-bottom: 1px solid var(--border-color);
+        overflow: hidden;
     }
-    
-    .search-section {
-        padding: 60px 5%;
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
+
+    /* Background Pattern (Tech Grid) */
+    .products-hero::before {
+        content: ''; position: absolute; inset: 0;
+        background-image: 
+            linear-gradient(var(--border-color) 1px, transparent 1px),
+            linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+        background-size: 50px 50px;
+        opacity: 0.1;
+        z-index: 0;
     }
-    
+
+    .products-hero-overlay {
+        position: absolute; inset: 0;
+        background: radial-gradient(circle at 50% 50%, rgba(255, 51, 51, 0.05), var(--bg-body) 80%);
+        z-index: 1;
+    }
+
+    .products-hero-content {
+        position: relative; z-index: 2;
+        width: 100%; max-width: 900px;
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        font-weight: 900;
+        text-transform: uppercase;
+        color: var(--text-main);
+        margin-bottom: 15px;
+        letter-spacing: -1px;
+    }
+
+    .hero-title span { color: var(--primary-red); }
+
+    .hero-subtitle {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        max-width: 650px;
+        margin: 0 auto 40px;
+        line-height: 1.6;
+    }
+
+    /* SEARCH BAR (Pill Style) */
     .search-container {
-        max-width: 800px;
-        margin: 0 auto;
-        position: relative;
+        max-width: 700px; margin: 0 auto; position: relative;
     }
-    
+
     .search-form {
         display: flex;
-        gap: 15px;
-        align-items: center;
+        border: 1px solid var(--border-color);
+        background: var(--bg-surface);
+        border-radius: 50px;
+        padding: 6px;
+        transition: 0.3s;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
-    
+
+    .search-form:focus-within {
+        border-color: var(--primary-red);
+        box-shadow: 0 10px 30px rgba(255, 51, 51, 0.15);
+    }
+
     .search-input {
         flex: 1;
-        padding: 20px 25px;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        color: var(--text);
-        font-family: 'Inter', system-ui, sans-serif;
+        padding: 15px 25px;
+        background: transparent;
+        border: none;
+        color: var(--text-main);
         font-size: 1rem;
-        border-radius: 0;
-        transition: 0.3s;
-    }
-    
-    .search-input:focus {
         outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 2px rgba(255, 51, 51, 0.1);
     }
-    
+
     .search-btn {
-        padding: 20px 40px;
-        background: var(--primary);
+        background: var(--primary-red);
+        border: none;
+        padding: 0 35px;
         color: white;
         font-weight: 700;
-        text-transform: uppercase;
-        text-decoration: none;
-        border: none;
+        border-radius: 50px;
         cursor: pointer;
         transition: 0.3s;
-        font-size: 0.9rem;
-        letter-spacing: 1px;
-        white-space: nowrap;
-    }
-    
-    .search-btn:hover {
-        background: var(--primary-dim);
-        box-shadow: 0 0 30px rgba(255, 51, 51, 0.3);
-    }
-    
-    .clear-search {
-        padding: 20px 30px;
-        background: transparent;
-        border: 1px solid var(--border);
-        color: var(--text-muted);
-        font-weight: 600;
         text-transform: uppercase;
-        cursor: pointer;
-        transition: 0.3s;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         letter-spacing: 1px;
+        display: flex; align-items: center; gap: 8px;
     }
-    
-    .clear-search:hover {
-        border-color: var(--primary);
-        color: var(--primary);
+
+    .search-btn:hover { background: var(--text-main); color: var(--bg-body); }
+
+    .search-info {
+        margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);
     }
-    
-    .search-results-info {
-        margin-top: 20px;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-        text-align: center;
-    }
-    
-    .search-results-info strong {
-        color: var(--primary);
-    }
-    
-    /* Products Grid - Matching Bento Grid Style */
+    .search-info strong { color: var(--primary-red); }
+    .clear-link { color: var(--text-main); text-decoration: underline; margin-left: 10px; font-size: 0.85rem; }
+
+    /* PRODUCTS GRID */
     .products-section {
-        padding: 100px 5%;
-        background: var(--bg);
+        padding: 80px 5%;
+        background: var(--bg-body);
     }
-    
+
     .products-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        /* Responsive: Min 300px width per card */
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 30px;
-        max-width: 1400px;
-        margin: 0 auto;
+        max-width: 1400px; margin: 0 auto;
     }
-    
+
+    /* Mobile Grid Adjustment */
+    @media (max-width: 480px) {
+        .products-grid { grid-template-columns: 1fr; }
+    }
+
     .product-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
+        background: var(--bg-surface-2);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        overflow: hidden;
+        display: flex; flex-direction: column;
+        transition: 0.4s ease;
         position: relative;
-        overflow: hidden;
-        transition: 0.4s;
-        min-height: 400px;
-        display: flex;
-        flex-direction: column;
     }
-    
+
     .product-card:hover {
-        border-color: var(--primary);
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        transform: translateY(-8px);
+        border-color: var(--primary-red);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
     }
     
+    /* Light mode shadow fix */
+    body.light-mode .product-card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+
     .product-image {
-        height: 250px;
+        height: 240px;
         width: 100%;
-        overflow: hidden;
         background: #000;
         position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid var(--border-color);
     }
-    
+
     .product-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+        width: 100%; height: 100%; object-fit: cover;
         transition: transform 0.6s ease;
     }
     
-    .product-card:hover .product-image img {
-        transform: scale(1.1);
-    }
-    
+    .product-card:hover .product-image img { transform: scale(1.1); }
+
     .product-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(0deg, rgba(0,0,0,0.9) 20%, rgba(0,0,0,0.4) 100%);
-        z-index: 1;
+        position: absolute; inset: 0;
+        background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 60%);
+        z-index: 1; pointer-events: none;
     }
-    
+
     .product-content {
         padding: 30px;
-        position: relative;
-        z-index: 2;
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
+        display: flex; flex-direction: column; flex-grow: 1;
     }
-    
+
     .product-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 15px;
-        color: white;
+        font-size: 1.4rem; font-weight: 700;
+        margin-bottom: 15px; color: var(--text-main);
         line-height: 1.3;
     }
-    
+
     .product-description {
-        color: #ccc;
-        line-height: 1.6;
-        font-size: 0.95rem;
-        margin-bottom: 20px;
-        flex-grow: 1;
+        color: var(--text-muted);
+        font-size: 0.95rem; line-height: 1.6;
+        margin-bottom: 25px; flex-grow: 1;
     }
-    
+
+    /* Buttons */
     .product-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
         margin-top: auto;
     }
-    
+
+    .btn-card {
+        padding: 12px; text-align: center;
+        font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+        border-radius: 4px; text-decoration: none; transition: 0.3s;
+        letter-spacing: 0.5px;
+    }
+
+    /* Details Button (Outline) */
     .btn-details {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 15px;
+        border: 1px solid var(--border-color); color: var(--text-main);
         background: transparent;
-        border: 1px solid var(--border);
-        color: white;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        transition: 0.3s;
     }
-    
-    .btn-details:hover {
-        border-color: white;
-        background: rgba(255, 255, 255, 0.05);
-    }
-    
+    .btn-details:hover { border-color: var(--text-main); background: var(--bg-surface); }
+
+    /* Enquire Button (Solid) */
     .btn-enquire {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 15px;
-        background: var(--primary);
-        border: 1px solid var(--primary);
-        color: white;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        transition: 0.3s;
+        background: var(--primary-red); color: white; border: 1px solid var(--primary-red);
     }
-    
     .btn-enquire:hover {
-        background: var(--primary-dim);
-        border-color: var(--primary-dim);
-        box-shadow: 0 0 20px rgba(255, 51, 51, 0.3);
+        background: transparent; color: var(--primary-red);
     }
-    
-    .no-products {
+
+    /* Empty State */
+    .no-results {
         grid-column: 1 / -1;
-        text-align: center;
-        padding: 60px;
-        border: 1px dashed var(--border);
-        border-radius: 8px;
-        background: var(--surface);
+        text-align: center; padding: 80px 20px;
+        border: 1px dashed var(--border-color);
+        background: var(--bg-surface); border-radius: 8px;
     }
-    
-    .no-products h3 {
-        color: var(--text-muted);
-        font-size: 1.5rem;
-        margin-bottom: 10px;
-    }
-    
-    .no-products p {
-        color: var(--text-muted);
-        opacity: 0.7;
-    }
-    
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .products-hero {
-            min-height: 50vh;
-            padding: 60px 5%;
-        }
-        
-        .search-form {
-            flex-direction: column;
-        }
-        
-        .search-input,
-        .search-btn,
-        .clear-search {
-            width: 100%;
-            justify-content: center;
-            box-sizing: border-box;
-        }
-        
-        .products-grid {
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-        
-        .product-actions {
-            grid-template-columns: 1fr;
-        }
-    }
-    
-    @media (max-width: 1024px) {
-        .products-grid {
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        }
-    }
+    .no-results h3 { color: var(--text-main); margin-bottom: 10px; }
+    .no-results p { color: var(--text-muted); }
+
 </style>
 
-<div class="noise-overlay"></div>
-
 <section class="products-hero">
-    <div class="hero-overlay" style="background: radial-gradient(circle at 70% 30%, rgba(20,20,20,0) 0%, var(--bg) 90%);"></div>
+    <div class="products-hero-overlay"></div>
     
     <div class="products-hero-content reveal">
-        <span class="label-mono">/// OUR CATALOG</span>
-        
-        <h1 class="display-1" style="font-size: clamp(2rem, 6vw, 4rem); margin-bottom: 1.5rem;">
-            INDUSTRIAL<br>
-            <span class="outline-text">PRODUCTS</span>
-        </h1>
-        
-        <p class="lead-text" style="margin: 0 auto; max-width: 700px;">
-            Explore our range of high-performance components engineered for absolute reliability in advanced automation systems.
+        <h1 class="hero-title">Industrial <span>Catalog</span></h1>
+        <p class="hero-subtitle">
+            Browse our range of high-performance automation components, PLCs, and custom engineered hardware.
         </p>
-    </div>
-</section>
 
-<section class="search-section">
-    <div class="search-container reveal">
-        <form method="GET" action="products.php" class="search-form">
-            <input 
-                type="text" 
-                name="search" 
-                placeholder="Search products by name or description..." 
-                class="search-input"
-                value="<?php echo htmlspecialchars($search_query); ?>"
-                autocomplete="off"
-            >
-            <button type="submit" class="search-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 10px;">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-            </button>
-            <?php if (!empty($search_query)): ?>
-                <button type="button" onclick="window.location.href='products.php'" class="clear-search">
-                    Clear Search
+        <div class="search-container">
+            <form method="GET" action="products.php" class="search-form">
+                <input 
+                    type="text" 
+                    name="search" 
+                    class="search-input"
+                    placeholder="Search by name or keyword..." 
+                    value="<?php echo htmlspecialchars($search_query); ?>"
+                    autocomplete="off"
+                >
+                <button type="submit" class="search-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Search
                 </button>
+            </form>
+            
+            <?php if (!empty($search_query)): ?>
+                <div class="search-info">
+                    Results for: <strong>"<?php echo htmlspecialchars($search_query); ?>"</strong>
+                    <a href="products.php" class="clear-link">Clear Filter</a>
+                </div>
             <?php endif; ?>
-        </form>
-        
-        <?php if (!empty($search_query)): ?>
-            <div class="search-results-info reveal">
-                Showing results for: <strong>"<?php echo htmlspecialchars($search_query); ?>"</strong>
-            </div>
-        <?php endif; ?>
+        </div>
     </div>
 </section>
 
 <section class="products-section">
-    <div class="reveal" style="margin-bottom: 60px;">
-        <span class="label-mono">/// PRODUCT COLLECTION</span>
-        <h2 class="display-2">Engineered for<br>Maximum Performance.</h2>
-    </div>
-
     <div class="products-grid reveal">
         <?php
         if (!$conn) {
-            echo '<div class="no-products">
-                    <h3>Database connection failed</h3>
-                    <p>Please try again later</p>
-                  </div>';
+            echo '<div class="no-results"><h3>System Error</h3><p>Database connection unavailable.</p></div>';
         } else {
-            // Prepare and execute query with search
+            // Prepared Statement logic
             if (!empty($where_clause)) {
                 $sql = "SELECT id, name, description, image_path FROM products $where_clause ORDER BY id DESC";
                 $stmt = $conn->prepare($sql);
-                if ($params) {
-                    $stmt->bind_param($param_types, ...$params);
-                }
+                if ($params) $stmt->bind_param($param_types, ...$params);
                 $stmt->execute();
                 $result = $stmt->get_result();
             } else {
@@ -405,22 +311,20 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                     $imagePath = 'uploads/' . $row['image_path'];
                     $imageUrl = (!empty($row['image_path']) && file_exists($imagePath)) ? $imagePath : 'assets/placeholder.jpg';
                     
-                    // Highlight search terms in description
+                    // Highlight logic
+                    $name = htmlspecialchars($row['name']);
                     $desc = htmlspecialchars($row['description']);
+                    
                     if (!empty($search_query)) {
-                        $desc = preg_replace("/(" . preg_quote($search_query, '/') . ")/i", "<strong style='color: var(--primary);'>$1</strong>", $desc);
+                        $hl = "<strong style='color: var(--primary-red); background: rgba(255,51,51,0.1);'>$1</strong>";
+                        $name = preg_replace("/(" . preg_quote($search_query, '/') . ")/i", $hl, $name);
+                        $desc = preg_replace("/(" . preg_quote($search_query, '/') . ")/i", $hl, $desc);
                     }
                     
-                    // Limit description length
-                    if (strlen(strip_tags($desc)) > 150) {
-                        $descPreview = substr(strip_tags($desc), 0, 150) . '...';
-                        $fullDesc = $desc;
-                        $showReadMore = true;
-                    } else {
-                        $descPreview = $desc;
-                        $fullDesc = $desc;
-                        $showReadMore = false;
-                    }
+                    // Truncate Description
+                    $descPreview = (strlen(strip_tags($row['description'])) > 120) 
+                        ? substr(strip_tags($desc), 0, 120) . '...' 
+                        : $desc;
                     ?>
                     
                     <div class="product-card">
@@ -431,32 +335,15 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                         </div>
                         
                         <div class="product-content">
-                            <h3 class="product-title">
-                                <?php 
-                                $name = htmlspecialchars($row['name']);
-                                if (!empty($search_query)) {
-                                    $name = preg_replace("/(" . preg_quote($search_query, '/') . ")/i", "<strong style='color: var(--primary);'>$1</strong>", $name);
-                                }
-                                echo $name;
-                                ?>
-                            </h3>
-                            
-                            <div class="product-description">
-                                <?php echo $descPreview; ?>
-                                <?php if ($showReadMore): ?>
-                                    <span class="read-more" style="color: var(--primary); cursor: pointer;" 
-                                          onclick="this.parentElement.innerHTML = '<?php echo addslashes($fullDesc); ?>'">
-                                        ... Read more
-                                    </span>
-                                <?php endif; ?>
-                            </div>
+                            <h3 class="product-title"><?php echo $name; ?></h3>
+                            <div class="product-description"><?php echo $descPreview; ?></div>
                             
                             <div class="product-actions">
-                                <a href="product-details.php?id=<?php echo $row['id']; ?>" class="btn-details">
-                                    View Details
+                                <a href="product-details.php?id=<?php echo $row['id']; ?>" class="btn-card btn-details">
+                                    Details
                                 </a>
-                                <a href="contact.php?product=<?php echo urlencode($row['name']); ?>" class="btn-enquire">
-                                    Request Quote
+                                <a href="contact.php?product=<?php echo urlencode($row['name']); ?>" class="btn-card btn-enquire">
+                                    Quote
                                 </a>
                             </div>
                         </div>
@@ -464,21 +351,12 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
 
                     <?php
                 }
-                
-                // Free result
-                if (isset($stmt)) {
-                    $stmt->close();
-                }
+                if (isset($stmt)) $stmt->close();
             } else {
                 ?>
-                <div class="no-products">
-                    <h3><?php echo empty($search_query) ? 'No products available' : 'No products found'; ?></h3>
-                    <p><?php echo empty($search_query) ? 'Check back later for updates to our catalog.' : 'Try different search terms.'; ?></p>
-                    <?php if (!empty($search_query)): ?>
-                        <a href="products.php" class="btn-details" style="margin-top: 20px; display: inline-block;">
-                            View All Products
-                        </a>
-                    <?php endif; ?>
+                <div class="no-results">
+                    <h3>No Products Found</h3>
+                    <p>We couldn't find anything matching your search. <a href="products.php" style="color: var(--primary-red);">View all products</a>.</p>
                 </div>
                 <?php
             }
@@ -488,7 +366,7 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
 </section>
 
 <script>
-    // Scroll Reveal Observer (same as homepage)
+    // Scroll Animation
     const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if(entry.isIntersecting) {
@@ -499,21 +377,16 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
 
     document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-    // Parallax effect for hero
+    // Parallax
     if (window.innerWidth > 900) {
         window.addEventListener('scroll', () => {
             const scrolled = window.scrollY;
-            const heroOverlay = document.querySelector('.products-hero .hero-overlay');
+            const heroOverlay = document.querySelector('.products-hero-overlay');
             if(heroOverlay) {
-                heroOverlay.style.transform = `translateY(${scrolled * 0.5}px)`;
+                heroOverlay.style.transform = `translateY(${scrolled * 0.4}px)`;
             }
         });
     }
-
-    // Auto-focus search input if search was performed
-    <?php if (!empty($search_query)): ?>
-    document.querySelector('input[name="search"]').focus();
-    <?php endif; ?>
 </script>
 
 <?php include 'includes/footer.php'; ?>

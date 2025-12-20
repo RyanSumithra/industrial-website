@@ -18,7 +18,7 @@ if ($result->num_rows == 0) {
 }
 
 $row = $result->fetch_assoc();
-$page_title = $row['title'] . ' | ' . SITE_NAME;
+$page_title = $row['title'] . ' | ' . (defined('SITE_NAME') ? SITE_NAME : 'Industrial Intelligence');
 
 // Handle comment submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
@@ -32,9 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
         $stmt->bind_param("isssi", $id, $name, $email, $comment, $parent_id);
         
         if ($stmt->execute()) {
-            $success_message = "Thank you for your comment! It will be visible after moderation.";
+            $success_message = "Comment posted successfully.";
         } else {
-            $error_message = "Error submitting comment. Please try again.";
+            $error_message = "Error submitting comment.";
         }
         $stmt->close();
     } else {
@@ -42,12 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
     }
 }
 
-// Fetch approved comments for this blog
+// Fetch comments
 $comments_sql = "SELECT * FROM comments WHERE blog_id = $id AND is_approved = 1 ORDER BY created_at DESC";
 $comments_result = $conn->query($comments_sql);
 $comments_count = $comments_result ? $comments_result->num_rows : 0;
 
-// Organize comments into parent-child structure
+// Organize comments
 $comments = [];
 if ($comments_result && $comments_result->num_rows > 0) {
     while($comment = $comments_result->fetch_assoc()) {
@@ -56,7 +56,6 @@ if ($comments_result && $comments_result->num_rows > 0) {
             $comments[$comment['id']]['replies'] = [];
         }
     }
-    // Reset pointer and fetch again for replies
     $comments_result->data_seek(0);
     while($comment = $comments_result->fetch_assoc()) {
         if ($comment['parent_id'] != 0 && isset($comments[$comment['parent_id']])) {
@@ -69,612 +68,396 @@ include 'includes/header.php';
 ?>
 
 <style>
-    /* Article Page Styles - Match Home Page */
-    :root {
-        --primary: #ff3333;
-        --primary-dim: #cc0000;
-        --bg: #030303;
-        --surface: #0a0a0a;
-        --border: #222;
-        --text: #ffffff;
-        --text-muted: #888;
+    /* --- PAGE SPECIFIC STYLES --- */
+    
+    /* 1. HERO SECTION */
+    .article-hero {
+        min-height: 40vh;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 120px 5% 60px;
+        background: var(--bg-body);
+        border-bottom: 1px solid var(--border-color);
+        overflow: hidden;
     }
 
-    body {
-        background-color: var(--bg);
-        color: var(--text);
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        overflow-x: hidden;
-        margin: 0;
+    /* Tech Grid Pattern */
+    .article-hero::before {
+        content: ''; position: absolute; inset: 0;
+        background-image: 
+            linear-gradient(var(--border-color) 1px, transparent 1px),
+            linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+        background-size: 50px 50px;
+        opacity: 0.1;
+        z-index: 0;
     }
 
-    .article-container { 
-        max-width: 900px; 
-        margin: 0 auto; 
-        padding: 60px 20px; 
+    .hero-overlay {
+        position: absolute; inset: 0;
+        background: radial-gradient(circle at 50% 30%, rgba(255, 51, 51, 0.05), var(--bg-body) 80%);
+        z-index: 1;
     }
-    
-    .article-header { 
-        text-align: center; 
-        margin-bottom: 60px; 
-        border-bottom: 1px solid var(--border); 
-        padding-bottom: 40px; 
+
+    /* Light Mode Hero Overlay: Brighter */
+    body.light-mode .hero-overlay {
+        background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.9), transparent 70%);
     }
-    
+
+    .article-hero-content {
+        position: relative; z-index: 10;
+        max-width: 900px; width: 100%;
+    }
+
     .article-meta { 
-        color: var(--primary); 
-        font-size: 0.9rem; 
-        font-weight: 700; 
-        text-transform: uppercase; 
-        letter-spacing: 1px; 
-        margin-bottom: 15px; 
-        font-family: 'Courier New', monospace;
+        color: var(--primary-red); 
+        font-family: 'Courier New', monospace; 
+        font-weight: 700; font-size: 0.9rem; letter-spacing: 2px; 
+        margin-bottom: 20px; display: inline-block;
+        text-transform: uppercase;
+        background: rgba(255, 51, 51, 0.1);
+        padding: 6px 12px; border-radius: 4px;
     }
-    
+
     .article-title { 
-        font-size: clamp(2.5rem, 5vw, 3.5rem); 
-        font-weight: 900; 
-        color: white; 
-        line-height: 1.2; 
-        margin-bottom: 20px; 
-        text-transform: uppercase;
+        font-size: clamp(2rem, 5vw, 3.5rem); 
+        font-weight: 900; color: var(--text-main); 
+        line-height: 1.1; margin-bottom: 20px; 
+        letter-spacing: -1px;
     }
     
-    .featured-image { 
-        width: 100%; 
-        height: 500px; 
-        object-fit: cover; 
-        margin: 50px 0; 
-        border: 1px solid var(--border);
-        transition: transform 0.3s ease;
-    }
-    
-    .featured-image:hover {
-        transform: scale(1.01);
-    }
-    
-    /* Content Formatting */
-    .article-content { 
-        color: #ccc; 
-        font-size: 1.1rem; 
-        line-height: 1.8; 
-        margin-bottom: 80px;
-    }
-    
-    .article-content h1, 
-    .article-content h2, 
-    .article-content h3 { 
-        color: white; 
-        margin-top: 40px; 
-        margin-bottom: 20px; 
-        font-weight: 800; 
-    }
-    
-    .article-content p { 
-        margin-bottom: 25px; 
-    }
-    
-    .article-content img { 
-        max-width: 100%; 
-        height: auto; 
-        border-radius: 0; 
-        margin: 30px 0; 
-        border: 1px solid var(--border); 
-    }
-    
-    .article-content ul, 
-    .article-content ol { 
-        margin-bottom: 25px; 
-        padding-left: 20px; 
-    }
-    
-    .article-content li { 
-        margin-bottom: 10px; 
-    }
-    
-    .article-content blockquote { 
-        border-left: 4px solid var(--primary); 
-        padding-left: 20px; 
-        font-style: italic; 
-        color: white; 
-        margin: 40px 0; 
-        font-size: 1.2rem;
-    }
+    /* Force Title Black in Light Mode */
+    body.light-mode .article-title { color: #000000 !important; }
 
+    /* 2. CONTENT CONTAINER */
+    .article-container { 
+        max-width: 800px; 
+        margin: 0 auto; 
+        padding: 60px 5%; 
+        background: var(--bg-body);
+    }
+    
     /* Back Button */
-    .back-btn { 
-        display: inline-flex; 
-        align-items: center; 
-        gap: 10px; 
-        color: var(--text-muted); 
-        text-decoration: none; 
-        font-weight: 600; 
-        margin-bottom: 40px; 
-        transition: all 0.3s ease;
-        padding: 12px 24px;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-size: 0.85rem;
+    .btn-back {
+        display: inline-flex; align-items: center; gap: 8px;
+        color: var(--text-muted); text-decoration: none;
+        font-weight: 600; font-size: 0.9rem; margin-bottom: 40px;
+        transition: 0.3s;
     }
-    
-    .back-btn:hover { 
-        color: var(--primary); 
-        border-color: var(--primary);
-        transform: translateX(-5px); 
+    .btn-back:hover { color: var(--primary-red); transform: translateX(-5px); }
+
+    /* Featured Image */
+    .featured-image-wrapper {
+        position: relative;
+        margin-bottom: 60px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    body.light-mode .featured-image-wrapper { box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+
+    .featured-image { 
+        width: 100%; height: auto; display: block;
+        transition: transform 0.3s;
     }
 
-    /* Comments Section */
+    /* Typography & Content */
+    .article-content { 
+        color: var(--text-muted); 
+        font-size: 1.125rem; 
+        line-height: 1.8; 
+    }
+    
+    /* --- FIX: Make text Dark in Light Mode --- */
+    body.light-mode .article-content {
+        color: #222222 !important; /* Nearly Black */
+    }
+    body.light-mode .article-content p {
+        color: #333333 !important; /* Dark Grey */
+    }
+    
+    .article-content p { margin-bottom: 1.5rem; }
+    
+    .article-content h2, .article-content h3 { 
+        color: var(--text-main); 
+        margin: 3rem 0 1rem; 
+        font-weight: 800; line-height: 1.2;
+    }
+    /* Force Headings Black in Light Mode */
+    body.light-mode .article-content h2, 
+    body.light-mode .article-content h3 {
+        color: #000000 !important;
+    }
+
+    .article-content h2 { font-size: 2rem; }
+    .article-content h3 { font-size: 1.5rem; }
+
+    .article-content ul, .article-content ol { 
+        margin-bottom: 1.5rem; padding-left: 1.5rem; 
+    }
+    .article-content li { margin-bottom: 0.5rem; }
+
+    .article-content blockquote { 
+        border-left: 4px solid var(--primary-red); 
+        margin: 2rem 0; padding: 1rem 2rem; 
+        font-style: italic; color: var(--text-main); 
+        background: var(--bg-surface-2);
+        border-radius: 0 8px 8px 0;
+    }
+    /* Light Mode Quote */
+    body.light-mode .article-content blockquote {
+        background: #f0f0f0;
+        color: #222 !important;
+    }
+    
+    .article-content img {
+        max-width: 100%; height: auto;
+        border-radius: 8px; margin: 2rem 0;
+    }
+
+    /* 3. COMMENTS SECTION */
     .comments-section {
-        margin-top: 80px;
-        border-top: 1px solid var(--border);
-        padding-top: 60px;
+        margin-top: 80px; padding-top: 60px;
+        border-top: 1px solid var(--border-color);
     }
 
     .comments-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 40px;
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 40px; flex-wrap: wrap; gap: 15px;
     }
 
-    .comments-title {
-        font-size: 2rem;
-        font-weight: 800;
-        color: white;
-        text-transform: uppercase;
+    .comments-title { 
+        font-size: 1.8rem; font-weight: 800; color: var(--text-main); margin: 0;
+    }
+    body.light-mode .comments-title { color: #000 !important; }
+
+    .comments-count-badge {
+        background: var(--bg-surface-2); border: 1px solid var(--border-color);
+        color: var(--text-main); font-weight: 700;
+        padding: 5px 15px; border-radius: 50px; font-size: 0.9rem;
     }
 
-    .comments-count {
-        color: var(--primary);
-        font-weight: 700;
-        font-size: 1rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-family: 'Courier New', monospace;
-        background: rgba(255, 51, 51, 0.1);
-        padding: 8px 16px;
-        border: 1px solid var(--primary);
+    /* Form Styles */
+    .comment-form-card {
+        background: var(--bg-surface-2);
+        border: 1px solid var(--border-color);
+        padding: 40px; border-radius: 8px;
+        margin-bottom: 60px;
     }
-
-    /* Comment Form */
-    .comment-form {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        padding: 40px;
-        margin-bottom: 50px;
-        transition: all 0.3s ease;
+    
+    .form-group { margin-bottom: 20px; }
+    
+    .form-label { 
+        display: block; color: var(--text-muted); font-size: 0.85rem; 
+        font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
     }
-
-    .comment-form:hover {
-        border-color: var(--primary);
-    }
-
-    .form-title {
-        color: white;
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 30px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .form-group {
-        margin-bottom: 25px;
-    }
-
-    .form-label {
-        display: block;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 8px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
+    
     .form-input {
-        width: 100%;
-        padding: 15px 20px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border);
-        color: white;
-        font-size: 1rem;
-        font-family: 'Inter', sans-serif;
-        transition: all 0.3s ease;
+        width: 100%; padding: 14px;
+        background: var(--bg-body); border: 1px solid var(--border-color);
+        color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 1rem;
+        border-radius: 4px; transition: 0.3s;
     }
-
+    /* Light Mode Input: White background, Dark Text */
+    body.light-mode .form-input {
+        background: #ffffff;
+        color: #000;
+        border-color: #ccc;
+    }
+    
     .form-input:focus {
-        outline: none;
-        border-color: var(--primary);
-        background: rgba(255, 51, 51, 0.05);
+        outline: none; border-color: var(--primary-red);
+        box-shadow: 0 0 0 3px rgba(255, 51, 51, 0.1);
     }
+    
+    textarea.form-input { min-height: 120px; resize: vertical; }
 
-    .form-textarea {
-        min-height: 150px;
-        resize: vertical;
+    .btn-submit {
+        background: var(--primary-red); color: white;
+        border: none; padding: 14px 30px;
+        font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+        border-radius: 4px; cursor: pointer; transition: 0.3s;
+        display: inline-flex; align-items: center; gap: 10px;
     }
-
-    .form-required {
-        color: var(--primary);
-    }
-
-    .submit-button {
-        padding: 18px 40px;
-        background: var(--primary);
-        color: white;
-        border: none;
-        cursor: pointer;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .submit-button:hover {
-        background: var(--primary-dim);
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(255, 51, 51, 0.2);
+    .btn-submit:hover { 
+        background: var(--text-main); transform: translateY(-2px); 
     }
 
     /* Messages */
-    .message {
-        padding: 15px 20px;
-        margin-bottom: 20px;
-        border: 1px solid transparent;
-        border-radius: 0;
-        font-weight: 600;
-    }
+    .msg { padding: 15px; border-radius: 4px; margin-bottom: 20px; font-weight: 600; }
+    .msg-success { background: rgba(0, 200, 0, 0.1); color: #00b300; border: 1px solid #00b300; }
+    .msg-error { background: rgba(255, 0, 0, 0.1); color: #ff3333; border: 1px solid #ff3333; }
 
-    .success-message {
-        background: rgba(0, 200, 0, 0.1);
-        border-color: #00cc00;
-        color: #00cc00;
-    }
-
-    .error-message {
-        background: rgba(255, 51, 51, 0.1);
-        border-color: var(--primary);
-        color: var(--primary);
-    }
-
-    /* Comments List */
-    .comments-list {
-        margin-top: 40px;
-    }
-
-    .comment {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        padding: 30px;
-        margin-bottom: 25px;
-        transition: all 0.3s ease;
+    /* Comment List */
+    .comment-item {
+        margin-bottom: 30px;
         position: relative;
     }
-
-    .comment:hover {
-        border-color: var(--primary);
-        transform: translateX(5px);
+    
+    .comment-box {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        padding: 25px; border-radius: 8px;
+        transition: 0.3s;
     }
+    .comment-box:hover { border-color: var(--text-muted); }
 
-    .comment-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-        flex-wrap: wrap;
-        gap: 15px;
+    .comment-meta {
+        display: flex; align-items: center; gap: 15px; margin-bottom: 15px;
     }
-
-    .comment-author {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .author-avatar {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary) 0%, #ff6666 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 700;
-        font-size: 1.2rem;
-        text-transform: uppercase;
-    }
-
-    .author-info {
-        flex: 1;
-    }
-
-    .author-name {
-        color: white;
-        font-weight: 700;
+    
+    .avatar {
+        width: 45px; height: 45px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--bg-surface-2), var(--border-color));
+        color: var(--primary-red); font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        border: 1px solid var(--border-color);
         font-size: 1.1rem;
-        margin-bottom: 5px;
     }
+    
+    .meta-info h4 { margin: 0; color: var(--text-main); font-size: 1rem; }
+    /* Force Name Dark in Light Mode */
+    body.light-mode .meta-info h4 { color: #000 !important; }
 
-    .comment-date {
-        color: var(--text-muted);
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
-    }
-
-    .comment-content {
-        color: #ccc;
-        line-height: 1.7;
-        margin-bottom: 20px;
-        padding-left: 65px;
-    }
-
-    .reply-button {
-        color: var(--primary);
-        background: none;
-        border: 1px solid var(--primary);
-        padding: 8px 20px;
-        cursor: pointer;
-        font-weight: 600;
+    .meta-info span { font-size: 0.8rem; color: var(--text-muted); }
+    
+    .comment-text { color: var(--text-muted); line-height: 1.6; margin-bottom: 15px; }
+    /* Darker comment text in light mode */
+    body.light-mode .comment-text { color: #333 !important; }
+    
+    .btn-reply {
+        background: transparent; border: 1px solid var(--border-color);
+        color: var(--text-muted); padding: 5px 15px; border-radius: 50px;
+        font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.3s;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 0.8rem;
-        transition: all 0.3s ease;
-        margin-left: 65px;
     }
-
-    .reply-button:hover {
-        background: var(--primary);
-        color: white;
-    }
+    .btn-reply:hover { border-color: var(--primary-red); color: var(--primary-red); }
 
     /* Replies */
-    .replies {
-        margin-left: 65px;
-        margin-top: 25px;
-        padding-left: 25px;
-        border-left: 2px solid var(--border);
+    .replies-container {
+        margin-left: 30px; margin-top: 15px;
+        border-left: 2px solid var(--border-color);
+        padding-left: 20px;
     }
-
-    .reply {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 20px;
-        margin-bottom: 15px;
-    }
-
-    .reply:hover {
-        border-color: var(--primary);
-    }
-
-    /* No Comments */
-    .no-comments {
-        text-align: center;
-        padding: 60px 20px;
-        border: 2px dashed var(--border);
-        margin: 40px 0;
-    }
-
-    .no-comments h3 {
-        color: #666;
-        font-size: 1.5rem;
-        margin-bottom: 15px;
-        font-weight: 600;
-    }
-
-    .no-comments p {
-        color: #888;
-        margin-bottom: 25px;
-        max-width: 500px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    /* Continue Reading */
-    .continue-reading {
-        border-top: 1px solid var(--border);
-        padding: 80px 0;
-        background: rgba(0, 0, 0, 0.5);
-        margin-top: 80px;
-        text-align: center;
-    }
-
-    .continue-title {
-        color: white;
-        font-size: 1.8rem;
-        font-weight: 800;
-        margin-bottom: 30px;
-        text-transform: uppercase;
-    }
-
-    .continue-button {
-        background: var(--primary);
-        color: white;
-        padding: 18px 45px;
-        text-decoration: none;
-        border: none;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        display: inline-flex;
-        align-items: center;
-        gap: 15px;
-        transition: all 0.3s ease;
-    }
-
-    .continue-button:hover {
-        background: var(--primary-dim);
-        gap: 20px;
-        transform: translateY(-2px);
-        box-shadow: 0 15px 30px rgba(255, 51, 51, 0.3);
-    }
-
-    @media (max-width: 768px) {
-        .article-container {
-            padding: 40px 15px;
-        }
-        
-        .article-title {
-            font-size: 2rem;
-        }
-        
-        .featured-image {
-            height: 300px;
-        }
-        
-        .comment-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        
-        .comment-content {
-            padding-left: 0;
-        }
-        
-        .reply-button {
-            margin-left: 0;
-        }
-        
-        .replies {
-            margin-left: 20px;
-            padding-left: 15px;
-        }
+    
+    @media (max-width: 600px) {
+        .replies-container { margin-left: 10px; padding-left: 15px; }
+        .article-hero { padding: 100px 20px 40px; }
+        .article-container { padding: 40px 20px; }
     }
 </style>
 
-<div class="article-container">
-    <a href="blogs.php" class="back-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-        Back to Intelligence Hub
-    </a>
+<div class="noise-overlay"></div>
 
-    <div class="article-header">
-        <div class="article-meta"><?php echo date('F j, Y', strtotime($row['created_at'])); ?></div>
+<section class="article-hero">
+    <div class="hero-overlay"></div>
+    <div class="article-hero-content reveal">
+        <div class="article-meta">
+            <?php echo date('F d, Y', strtotime($row['created_at'])); ?>
+        </div>
         <h1 class="article-title"><?php echo htmlspecialchars($row['title']); ?></h1>
     </div>
+</section>
+
+<div class="article-container">
+    <a href="blogs.php" class="btn-back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Intelligence Hub
+    </a>
 
     <?php 
         $imgFile = 'uploads/' . $row['image'];
         if(file_exists($imgFile) && !empty($row['image'])) {
-            echo '<img src="'.$imgFile.'" class="featured-image" alt="'.htmlspecialchars($row['title']).'">';
+            echo '<div class="featured-image-wrapper reveal"><img src="'.$imgFile.'" class="featured-image" alt="'.htmlspecialchars($row['title']).'"></div>';
         }
     ?>
 
-    <div class="article-content">
+    <article class="article-content reveal">
         <?php echo $row['content']; ?>
-    </div>
+    </article>
 
-    <!-- Comments Section -->
-    <div class="comments-section">
+    <div class="comments-section reveal">
         <div class="comments-header">
             <h2 class="comments-title">Discussion</h2>
-            <span class="comments-count"><?php echo $comments_count; ?> Comment<?php echo $comments_count != 1 ? 's' : ''; ?></span>
+            <span class="comments-count-badge"><?php echo $comments_count; ?> Comments</span>
         </div>
 
-        <!-- Comment Form -->
-        <div class="comment-form">
-            <h3 class="form-title">Leave a Comment</h3>
+        <div class="comment-form-card">
+            <h3 style="color: var(--text-main); margin-bottom: 20px;">Join the Conversation</h3>
             
             <?php if (isset($success_message)): ?>
-                <div class="message success-message"><?php echo $success_message; ?></div>
+                <div class="msg msg-success"><?php echo $success_message; ?></div>
             <?php endif; ?>
-            
             <?php if (isset($error_message)): ?>
-                <div class="message error-message"><?php echo $error_message; ?></div>
+                <div class="msg msg-error"><?php echo $error_message; ?></div>
             <?php endif; ?>
-            
+
             <form method="POST" action="">
-                <div class="form-group">
-                    <label for="name" class="form-label">Name <span class="form-required">*</span></label>
-                    <input type="text" id="name" name="name" class="form-input" required 
-                           placeholder="Enter your name" value="<?php echo isset($_POST['name']) ? htmlspecialchars($_POST['name']) : ''; ?>">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label class="form-label">Name *</label>
+                        <input type="text" name="name" class="form-input" required placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-input" placeholder="john@example.com">
+                    </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" id="email" name="email" class="form-input" 
-                           placeholder="Enter your email (optional)" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
-                </div>
-                
-                <div class="form-group">
-                    <label for="comment" class="form-label">Comment <span class="form-required">*</span></label>
-                    <textarea id="comment" name="comment" class="form-input form-textarea" required 
-                              placeholder="Share your thoughts..."><?php echo isset($_POST['comment']) ? htmlspecialchars($_POST['comment']) : ''; ?></textarea>
+                    <label class="form-label">Comment *</label>
+                    <textarea name="comment" id="comment" class="form-input" required placeholder="Share your insights..."></textarea>
                 </div>
                 
                 <input type="hidden" name="parent_id" id="parent_id" value="0">
-                <input type="hidden" name="blog_id" value="<?php echo $id; ?>">
                 
-                <button type="submit" name="submit_comment" class="submit-button">
+                <button type="submit" name="submit_comment" class="btn-submit">
                     Post Comment
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
                 </button>
             </form>
         </div>
 
-        <!-- Comments List -->
         <div class="comments-list">
             <?php if (empty($comments)): ?>
-                <div class="no-comments">
-                    <h3>No comments yet</h3>
-                    <p>Be the first to share your thoughts on this article.</p>
+                <div style="text-align: center; padding: 40px; border: 1px dashed var(--border-color); color: var(--text-muted); border-radius: 8px;">
+                    No comments yet. Be the first to start the discussion!
                 </div>
             <?php else: ?>
                 <?php foreach ($comments as $comment): ?>
-                    <div class="comment" id="comment-<?php echo $comment['id']; ?>">
-                        <div class="comment-header">
-                            <div class="comment-author">
-                                <div class="author-avatar">
-                                    <?php echo strtoupper(substr($comment['name'], 0, 1)); ?>
-                                </div>
-                                <div class="author-info">
-                                    <div class="author-name"><?php echo htmlspecialchars($comment['name']); ?></div>
-                                    <div class="comment-date"><?php echo date('F j, Y \a\t g:i a', strtotime($comment['created_at'])); ?></div>
+                    <div class="comment-item">
+                        <div class="comment-box">
+                            <div class="comment-meta">
+                                <div class="avatar"><?php echo strtoupper(substr($comment['name'], 0, 1)); ?></div>
+                                <div class="meta-info">
+                                    <h4><?php echo htmlspecialchars($comment['name']); ?></h4>
+                                    <span><?php echo date('M d, Y', strtotime($comment['created_at'])); ?></span>
                                 </div>
                             </div>
+                            <div class="comment-text">
+                                <?php echo nl2br(htmlspecialchars($comment['comment'])); ?>
+                            </div>
+                            <button class="btn-reply" onclick="replyTo(<?php echo $comment['id']; ?>, '<?php echo htmlspecialchars($comment['name']); ?>')">Reply</button>
                         </div>
-                        
-                        <div class="comment-content">
-                            <?php echo nl2br(htmlspecialchars($comment['comment'])); ?>
-                        </div>
-                        
-                        <button class="reply-button" onclick="setReplyTo(<?php echo $comment['id']; ?>, '<?php echo htmlspecialchars($comment['name']); ?>')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="9 17 4 12 9 7"></polyline>
-                                <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
-                            </svg>
-                            Reply
-                        </button>
-                        
+
                         <?php if (!empty($comment['replies'])): ?>
-                            <div class="replies">
+                            <div class="replies-container">
                                 <?php foreach ($comment['replies'] as $reply): ?>
-                                    <div class="comment reply" id="comment-<?php echo $reply['id']; ?>">
-                                        <div class="comment-header">
-                                            <div class="comment-author">
-                                                <div class="author-avatar" style="width: 40px; height: 40px; font-size: 1rem;">
-                                                    <?php echo strtoupper(substr($reply['name'], 0, 1)); ?>
-                                                </div>
-                                                <div class="author-info">
-                                                    <div class="author-name"><?php echo htmlspecialchars($reply['name']); ?></div>
-                                                    <div class="comment-date"><?php echo date('F j, Y \a\t g:i a', strtotime($reply['created_at'])); ?></div>
+                                    <div class="comment-item" style="margin-bottom: 15px;">
+                                        <div class="comment-box" style="background: var(--bg-body);">
+                                            <div class="comment-meta">
+                                                <div class="avatar" style="width: 35px; height: 35px; font-size: 0.9rem;"><?php echo strtoupper(substr($reply['name'], 0, 1)); ?></div>
+                                                <div class="meta-info">
+                                                    <h4 style="font-size: 0.95rem;"><?php echo htmlspecialchars($reply['name']); ?></h4>
+                                                    <span><?php echo date('M d, Y', strtotime($reply['created_at'])); ?></span>
                                                 </div>
                                             </div>
-                                        </div>
-                                        
-                                        <div class="comment-content">
-                                            <?php echo nl2br(htmlspecialchars($reply['comment'])); ?>
+                                            <div class="comment-text" style="font-size: 0.95rem;">
+                                                <?php echo nl2br(htmlspecialchars($reply['comment'])); ?>
+                                            </div>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -687,81 +470,25 @@ include 'includes/header.php';
     </div>
 </div>
 
-<!-- Continue Reading Section -->
-<div class="continue-reading">
-    <div class="container" style="max-width: 900px; margin: 0 auto;">
-        <h3 class="continue-title">Continue Reading</h3>
-        <a href="blogs.php" class="continue-button">
-            View All Articles
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-        </a>
-    </div>
-</div>
-
 <script>
-    // Function to set reply target
-    function setReplyTo(commentId, authorName) {
-        document.getElementById('parent_id').value = commentId;
-        document.getElementById('comment').focus();
-        document.getElementById('comment').placeholder = 'Reply to ' + authorName + '...';
-        
-        // Scroll to comment form
-        document.querySelector('.comment-form').scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start'
-        });
-        
-        // Highlight the form
-        document.querySelector('.comment-form').style.borderColor = 'var(--primary)';
-        document.querySelector('.comment-form').style.boxShadow = '0 0 0 2px rgba(255, 51, 51, 0.2)';
-        
-        // Remove highlight after 2 seconds
-        setTimeout(function() {
-            document.querySelector('.comment-form').style.borderColor = 'var(--border)';
-            document.querySelector('.comment-form').style.boxShadow = 'none';
-        }, 2000);
-    }
-
-    // Reset reply if clicking in comment field
-    document.getElementById('comment').addEventListener('focus', function() {
-        if (this.placeholder.includes('Reply to')) {
-            this.placeholder = 'Share your thoughts...';
-            document.getElementById('parent_id').value = 0;
-        }
-    });
-
-    // Form validation
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const name = document.getElementById('name').value.trim();
-        const comment = document.getElementById('comment').value.trim();
-        
-        if (!name || !comment) {
-            e.preventDefault();
-            alert('Please fill in all required fields.');
-            return false;
-        }
-    });
-
-    // Scroll reveal animation for comments
-    const commentObserver = new IntersectionObserver((entries) => {
+    // Scroll Reveal
+    const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
+            if(entry.isIntersecting) {
+                entry.target.classList.add('active');
             }
         });
     }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-    // Apply animation to comments
-    document.querySelectorAll('.comment').forEach(comment => {
-        comment.style.opacity = '0';
-        comment.style.transform = 'translateY(20px)';
-        comment.style.transition = 'all 0.6s ease';
-        commentObserver.observe(comment);
-    });
+    // Reply Logic
+    function replyTo(id, name) {
+        document.getElementById('parent_id').value = id;
+        const textarea = document.getElementById('comment');
+        textarea.focus();
+        textarea.placeholder = "Replying to " + name + "...";
+        document.querySelector('.comment-form-card').scrollIntoView({behavior: 'smooth'});
+    }
 </script>
 
 <?php include 'includes/footer.php'; ?>

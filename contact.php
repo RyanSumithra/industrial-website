@@ -256,7 +256,7 @@ include 'includes/header.php';
             <div class="pointer-icon">📍</div>
             <div>
                 <h3 style="color: white; margin: 0; font-size: 1.5rem; font-weight: 800;">Head Office</h3>
-                <span style="color: var(--primary-red); font-size: 0.9rem; text-transform: uppercase; font-weight: 700;">asiaTech Mecha</span>
+                <span style="color: var(--primary-red); font-size: 0.9rem; text-transform: uppercase; font-weight: 700;">TechAsia Mecha</span>
             </div>
         </div>
         
