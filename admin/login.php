@@ -8,8 +8,8 @@ define('ADMIN_EMAIL', 'patilpouras145@gmail.com');
 define('SENDER_EMAIL', 'info@techasiamechatronics.com'); 
 
 // [C] GOOGLE RECAPTCHA KEYS
-define('RECAPTCHA_SITE_KEY', '6LeJeywsAAAAABjzcZQ3lotOnOQOCC5vkLJSs_XX'); 
-define('RECAPTCHA_SECRET_KEY', '6LeJeywsAAAAAOrWQe30XIkerVxgXHZ5Ky3QY7Zr');
+define('RECAPTCHA_SITE_KEY', 'paste here site key'); 
+define('RECAPTCHA_SECRET_KEY', 'paste here secret key');
 
 // -------------------- 2. SECURITY SETUP --------------------
 ini_set('session.cookie_httponly', 1);
